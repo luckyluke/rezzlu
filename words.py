@@ -14,6 +14,12 @@ class WordManager(object):
     def do_config(self, cfg):
         self.load_dict(cfg.lang)
 
+    def get_timer(self, rows, cols):
+        if rows*cols == 16:
+            return 120
+        else:
+            return 180
+
     def get_schema(self, rows, cols):
         #d = solver.load_dict('dicts/ita.dict', False)
         #stats = self.wdict.build_stats()

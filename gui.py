@@ -1,6 +1,6 @@
 import os
 
-from gi.repository import Gtk, Gdk, GObject, cairo
+from gi.repository import Gtk, Gdk, GObject
 from gi.repository.GdkPixbuf import Pixbuf, InterpType
 #from gi import _glib
 from gi._glib import GError
@@ -40,11 +40,15 @@ class RezChar(Gtk.Image):
         try:
             pix = Pixbuf.new_from_file_at_size(fname, self._width, self._height)
             if pre_arrow:
-                pix_pre = Pixbuf.new_from_file_at_size(pre_arrow, self._width, self._height)
-                pix_pre.composite(pix, 0, 0, pix.props.width, pix.props.height, 0, 0, 1.0, 1.0, InterpType.HYPER, 255)
+                pix_pre = Pixbuf.new_from_file_at_size(pre_arrow,
+                                                       self._width, self._height)
+                pix_pre.composite(pix, 0, 0, pix.props.width, pix.props.height,
+                                  0, 0, 1.0, 1.0, InterpType.HYPER, 255)
             if post_arrow:
-                pix_post = Pixbuf.new_from_file_at_size(post_arrow, self._width, self._height)
-                pix_post.composite(pix, 0, 0, pix.props.width, pix.props.height, 0, 0, 1.0, 1.0, InterpType.HYPER, 255)
+                pix_post = Pixbuf.new_from_file_at_size(post_arrow,
+                                                        self._width, self._height)
+                pix_post.composite(pix, 0, 0, pix.props.width, pix.props.height,
+                                   0, 0, 1.0, 1.0, InterpType.HYPER, 255)
                 
             self.set_from_pixbuf(pix)
             self._active = active
@@ -64,7 +68,6 @@ class RezChar(Gtk.Image):
         """
         if char:
             arrow_x, arrow_y = char.row - self.row, char.col -  self.col
-            print self, char,arrow_x, arrow_y
             if (arrow_x, arrow_y) != (0, 0):
                 fname = "images/arrow_%d_%d.svg" %(arrow_x, arrow_y)
                 if os.path.exists(fname):
@@ -96,7 +99,6 @@ class RezTable(Gtk.EventBox):
             for j in range(len(charmatrix[i])):
                 b = RezChar(charmatrix[i][j], i, j, charw, charh)
                 b.set_active(False)
-                print i, j, b
                 self._tab.attach(b, j, j+1, i, i+1,
                                  Gtk.AttachOptions.EXPAND,
                                  Gtk.AttachOptions.EXPAND)
@@ -186,6 +188,8 @@ class RezConfig:
     rows = 4
     columns = 4
     lang = 'ita'
+    # TODO
+    solve_all = False
 
 
 class MainWin(Gtk.Window):
@@ -231,9 +235,25 @@ class MainWin(Gtk.Window):
         stopb.connect("clicked", self.on_stop)
         self.bbox.pack_start(stopb, False, False, 0)
 
-        timel = Gtk.Label(label="00:00")
-        #startb.connect("clicked", self.on_start)
+        timer = self.wm.get_timer(self.cfg.rows, self.cfg.columns)
+        timel = Gtk.Label(label="%s:%s" %(str(timer/60).zfill(2),
+                                          str(timer%60).zfill(2)))
+        timel.timer = timer
+        def on_timer(timel):
+            timel.timer -= 1
+            m = timel.timer / 60
+            s = timel.timer % 60
+            timel.set_label("%s:%s" %(str(m).zfill(2), str(s).zfill(2)))
+            if m == 0 and s == 0:
+                self.on_timeout()
+                return False
+            else:
+                return True
+        GObject.timeout_add_seconds(1, on_timer, timel)
         self.bbox.pack_start(timel, True, True, 0)
+
+    def on_timeout(self):
+        print "timeout!"
 
     def on_start(self, starttb):
         self.wm.do_config(self.cfg)
