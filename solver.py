@@ -76,8 +76,8 @@ class OptDict(object):
     #     else:
     #         return self.find_noopt(word)
 
-    def optimize(self):
-        self.build_opt()
+    def optimize(self, *a, **kw):
+        self.build_opt(*a, **kw)
         self.find = self.find_opt
 
     def deoptimize(self):
@@ -104,7 +104,10 @@ class OptDict(object):
 
     # def build_opt(self, fh=None):
     #     for w in fh:
-    def build_opt(self):
+    def build_opt(self, progress_cb=None):
+        if progress_cb:
+            wid = 0
+
         for w in self._rawd:
             wl = list(w)
             wlen = len(w)
@@ -115,12 +118,17 @@ class OptDict(object):
                     # parola nuova
                     tmpd[c] = {}
 
-                if i == wlen -1:
+                if i == wlen - 1:
                     # teminatore di parola
                     tmpd[c][None] = None
                 else:
                     # parola ok fin qua, scorro avanti
                     tmpd = tmpd[c]
+
+            if progress_cb:
+                wid += 1
+                if wid % 1000 == 1:
+                    progress_cb()
 
     def find_opt(self, word):
         ret = -1
@@ -248,7 +256,7 @@ def solve_char(game, d, starts, srow, scol, usati, path):
 
     return words
 
-def solve(game, d):
+def solve(game, d, progress_cb=None):
     game = load_game(game)
     rows = len(game)
     columns = len(game[0])
@@ -259,6 +267,8 @@ def solve(game, d):
             newws = solve_char(game, d, tmp, row, col,
                                [(row, col)], [(row, col)])
             words.extend(newws)
+            if progress_cb:
+                progress_cb()
     return words
 
 def load_dict(fname, opt=True):

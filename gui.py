@@ -1,9 +1,7 @@
 import os
 
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gtk, Gdk, GObject, GLib
 from gi.repository.GdkPixbuf import Pixbuf, InterpType
-#from gi import _glib
-from gi._glib import GError
 
 class RezChar(Gtk.Image):
     def __init__(self, char, row, col, w, h):
@@ -52,7 +50,7 @@ class RezChar(Gtk.Image):
                 
             self.set_from_pixbuf(pix)
             self._active = active
-        except GError, e:
+        except GLib.GError, e:
             print 'error', e
 
     def get_super_fnames(self, char):
@@ -94,6 +92,8 @@ class RezTable(Gtk.EventBox):
             charw = charh = 75
 
         self._tab = Gtk.Table(wm.rows, wm.cols, True)
+        self._tab.set_row_spacings(0)
+        self._tab.set_col_spacings(0)
         for i in range(len(charmatrix)):
             for j in range(len(charmatrix[i])):
                 b = RezChar(charmatrix[i][j], i, j, charw, charh)
@@ -188,7 +188,6 @@ class RezConfig:
     rows = 4
     columns = 4
     lang = 'ita'
-    # TODO
     solve_all = True
 
 
@@ -257,14 +256,29 @@ class MainWin(Gtk.Window):
 
     def on_start(self, starttb):
         self.gm.do_config(self.cfg)
-        self.set_run_buttons()
 
-        wm = self.gm.get_wm()
+        prog = Gtk.Spinner()
+        progl = Gtk.Label("Generazione gioco ...")
+        self.tabbox.pack_start(prog, True, True, 0)
+        self.tabbox.pack_end(progl, True, False, 0)
+        prog.start()
+        self.tabbox.show_all()
+
+        def on_progress():
+            while Gtk.events_pending():
+                Gtk.main_iteration()
+
+        wm = self.gm.get_wm(on_progress)
+
+        prog.stop()
+        self.tabbox.remove(prog)
+        self.tabbox.remove(progl)
 
         w, h = self.get_size()
         self.tab.popola(w, h, wm)
 
         self.tabbox.pack_start(self.tab, False, False, 0)
+        self.set_run_buttons()
         self.show_all()
 
     def on_options(self, optb):

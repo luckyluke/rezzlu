@@ -20,27 +20,24 @@ class GameManager(object):
                                  self.cfg.rows, self.cfg.columns)
         return schema
 
-    def solve_schemas(self, schemas):
-        self.wdict.optimize()
-        sols = []
-        for sch in schemas:
-            sol = solver.solve(sch, self.wdict)
-            sols.append(sol)
+    def solve_schema(self, schema, progress_cb=None):
+        self.wdict.optimize(progress_cb)
+        sol = solver.solve(schema, self.wdict, progress_cb)
         self.wdict.deoptimize()
-        return sols
+        return sol
 
     def load_dict(self, lang):
         self.wdict = solver.OptDict()
         self.wdict.read('dicts/'+lang+'.dict')
         self.wdict.lang = lang
 
-    def get_wm(self):
+    def get_wm(self, progress_cb=None):
         wm = WordManager()
         wm.schema = self.get_schema()
         wm.rows = self.cfg.rows
         wm.cols = self.cfg.columns
         if self.cfg.solve_all:
-            wm.sol = self.solve_schemas([wm.schema])[0]
+            wm.sol = self.solve_schema(wm.schema, progress_cb)
         else:
             wm.wdict = self.wdict
         return wm
