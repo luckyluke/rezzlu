@@ -167,6 +167,7 @@ def solve_char(game, d, starts, srow, scol, usati, path):
     return words
 
 def solve(game, d):
+    game = load_game(game)
     rows = len(game)
     columns = len(game[0])
     words = []
@@ -187,10 +188,11 @@ def load_dict(fname, opt=True):
 def load_game(game):
     rows = len(game)
     columns = len(game[0])
+    newg = [['']*columns for _ in range(rows)]
     for row in range(rows):
         for col in range(columns):
-            game[row][col] = game[row][col].lower()
-    return game
+            newg[row][col] = game[row][col].lower()
+    return newg
 
 def gen_game(stats, rows, columns):
     # genero distribuzine cumulativa

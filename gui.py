@@ -79,14 +79,13 @@ class RezChar(Gtk.Image):
 
 class RezTable(Gtk.EventBox):
     _border = 10
-    def __init__(self, wm):
+    def __init__(self):
         Gtk.EventBox.__init__(self)
         self.set_above_child(True)
-        self.wm = wm
         self._sigtable = []
 
-    def popola(self, w, h, nrows, ncols):
-        charmatrix = self.wm.get_schema(nrows, ncols)
+    def popola(self, w, h, wm):
+        charmatrix = wm.schema
         w = w / len(charmatrix)
         h = h / len(charmatrix[0])
         charw = w - self._border
@@ -94,7 +93,7 @@ class RezTable(Gtk.EventBox):
         if charw < 1 or charh < 1:
             charw = charh = 75
 
-        self._tab = Gtk.Table(nrows, ncols, True)
+        self._tab = Gtk.Table(wm.rows, wm.cols, True)
         for i in range(len(charmatrix)):
             for j in range(len(charmatrix[i])):
                 b = RezChar(charmatrix[i][j], i, j, charw, charh)
@@ -113,6 +112,7 @@ class RezTable(Gtk.EventBox):
         self._sigtable.append(sigid)
 
         self.add(self._tab)
+        self.wm = wm
 
     def spopola(self):
         for sigid in self._sigtable:
@@ -189,13 +189,13 @@ class RezConfig:
     columns = 4
     lang = 'ita'
     # TODO
-    solve_all = False
+    solve_all = True
 
 
 class MainWin(Gtk.Window):
     # tmp. carica da file
     cfg = RezConfig
-    def __init__(self, wm):
+    def __init__(self, gm):
         Gtk.Window.__init__(self, title="Rezzlu")
         self.set_default_size(400, 400)
 
@@ -205,8 +205,8 @@ class MainWin(Gtk.Window):
         self.set_start_buttons()
         box.pack_start(self.bbox, False, False, 0)
 
-        self.wm = wm
-        self.tab = RezTable(wm)
+        self.gm = gm
+        self.tab = RezTable()
 
         self.add(box)
         self.tabbox = box
@@ -235,7 +235,7 @@ class MainWin(Gtk.Window):
         stopb.connect("clicked", self.on_stop)
         self.bbox.pack_start(stopb, False, False, 0)
 
-        timer = self.wm.get_timer(self.cfg.rows, self.cfg.columns)
+        timer = self.gm.get_timer()
         timel = Gtk.Label(label="%s:%s" %(str(timer/60).zfill(2),
                                           str(timer%60).zfill(2)))
         timel.timer = timer
@@ -256,11 +256,13 @@ class MainWin(Gtk.Window):
         print "timeout!"
 
     def on_start(self, starttb):
-        self.wm.do_config(self.cfg)
+        self.gm.do_config(self.cfg)
         self.set_run_buttons()
 
+        wm = self.gm.get_wm()
+
         w, h = self.get_size()
-        self.tab.popola(w, h, self.cfg.rows, self.cfg.columns)
+        self.tab.popola(w, h, wm)
 
         self.tabbox.pack_start(self.tab, False, False, 0)
         self.show_all()
@@ -283,9 +285,9 @@ class MainWin(Gtk.Window):
     #    Gdk.threads_add_idle(_glib.PRIORITY_DEFAULT_IDLE, self.tab.popola, TEST)
 
 
-def main_loop(wm):
+def main_loop(gm):
     #Gdk.threads_init()
-    win = MainWin(wm)
+    win = MainWin(gm)
     win.connect("delete-event", Gtk.main_quit)
     win.show_all()
     Gtk.main()

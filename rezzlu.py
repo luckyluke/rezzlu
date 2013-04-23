@@ -1,4 +1,4 @@
-from words import WordManager
+from words import GameManager
 from gui import main_loop
 
 TEST=[['G', 'E', 'H', 'C'],
@@ -12,5 +12,5 @@ TEST=[['G', 'E', 'H', 'C'],
 #       ['A', 'A', 'A', 'A']]
 
 if __name__=='__main__':
-    wm = WordManager()
-    main_loop(wm)
+    gm = GameManager()
+    main_loop(gm)

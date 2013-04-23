@@ -1,38 +1,31 @@
 import solver
 
 
-class WordManager(object):
-    """ logica di gestione del gioco """
-    # opzioni? 
-    schema_rows = 4
-    schema_cols = 4
-    def __init__(self):
-        self._tmpw = []
-        #self.schema = schema
-        #self.load_dict('ita')
+class GameManager(object):
+    cfg = None
 
     def do_config(self, cfg):
+        self.cfg = cfg
         self.load_dict(cfg.lang)
 
-    def get_timer(self, rows, cols):
-        if rows*cols == 16:
+    def get_timer(self):
+        if self.cfg.rows*self.cfg.columns == 16:
             return 120
         else:
             return 180
 
-    def get_schema(self, rows, cols):
-        #d = solver.load_dict('dicts/ita.dict', False)
-        #stats = self.wdict.build_stats()
+    def get_schema(self):
         self.wdict.build_stats()
-        schema = solver.gen_game(self.wdict.stats, rows, cols)
+        schema = solver.gen_game(self.wdict.stats,
+                                 self.cfg.rows, self.cfg.columns)
         return schema
 
-    def solve_schema(self, schemas):
+    def solve_schemas(self, schemas):
         self.wdict.optimize()
         sols = []
         for sch in schemas:
             sol = solver.solve(sch, self.wdict)
-            sol.append(sol)
+            sols.append(sol)
         self.wdict.deoptimize()
         return sols
 
@@ -40,6 +33,27 @@ class WordManager(object):
         self.wdict = solver.OptDict()
         self.wdict.read('dicts/'+lang+'.dict')
         self.wdict.lang = lang
+
+    def get_wm(self):
+        wm = WordManager()
+        wm.schema = self.get_schema()
+        wm.rows = self.cfg.rows
+        wm.cols = self.cfg.columns
+        if self.cfg.solve_all:
+            wm.sol = self.solve_schemas([wm.schema])[0]
+        else:
+            wm.wdict = self.wdict
+        return wm
+
+class WordManager(object):
+    """ logica di gestione del gioco """
+    def __init__(self):
+        self._tmpw = []
+        self.schema = []
+        self.rows = 0
+        self.cols = 0
+        self.sol = []
+        self.wdict = None
 
     def put_char(self, char):
         """ Ritorna la parola selezionata"""
@@ -60,7 +74,7 @@ class WordManager(object):
                 return self._tmpw
 
         self._tmpw.append(char)
-        print [c.char for c in self._tmpw]
+        print 'Word:', ''.join([c.char for c in self._tmpw])
         return self._tmpw
 
     def stop_word(self):
@@ -70,9 +84,8 @@ class WordManager(object):
 
     def check_word(self, word):
         word = word.lower()
-        #if word == 'bu':
-        #if word in self.wdict:
-        if self.wdict.find(word) == 0:
+        if (self.wdict and  self.wdict.find(word) == 0) or\
+                (self.sol and word in [w for w, path in self.sol]):
             print "Trovato", word, "!!!!!!"
             return True
         else:
