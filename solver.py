@@ -38,10 +38,14 @@ class OptDict(object):
     def read(self, fname):
         with open(fname) as fh:
             if fname.endswith('.dict'):
-                self._rawd = map(lambda w: w.replace('\n', '').replace('\r', ''),
-                                 fh.readlines())
+                self._rawd = map(str.strip, fh.readlines())
+                #self._d = dict.fromkeys(map(lambda w: w.replace('\n', '').
+                #                            replace('\r', ''), fh),
+                #                        {None:None})
+                #self._rawd = self._d.keys()
+
                 #self.build_stats()
-                #self.build_opt()
+                #self.build_opt(fh)
 
             #elif fname.endswith('.dict'):
             #    self._d, self.stats = cPickle.load(fh)
@@ -98,6 +102,8 @@ class OptDict(object):
         else:
             return 1
 
+    # def build_opt(self, fh=None):
+    #     for w in fh:
     def build_opt(self):
         for w in self._rawd:
             wl = list(w)
@@ -136,24 +142,100 @@ class OptDict(object):
                 ret = 1
         return ret
 
+    # def semi_optimize(self):
+    #     self.build_semiopt()
+    #     self.find = self.find_semiopt
+    #     #print 'semiopt:',self._d
+
+    # def build_semiopt(self):
+    #     #nd = {None: None}
+    #     #self._d = dict([(w,nd) for w in self._rawd])
+
+    #     #for w in self._rawd:
+    #     #    self._d[w] = {None:None}
+
+    #     #self._d = dict.fromkeys(self._rawd, {None:None})
+    #     pass
+
+    #     #### ok, velocizzazione quasi nulla, 2-3 %
+    #     # for w in self._rawd:
+    #     #     wl = list(w)
+    #     #     wlen = len(w)
+    #     #     tmpd = self._d
+    #     #     for i, c in enumerate(wl[:2]):
+    #     #         #if len(tmpd.keys()) == 0 or not tmpd.has_key(c):
+    #     #         if not tmpd.has_key(c):
+    #     #             # parola nuova
+    #     #             tmpd[c] = {}
+    #     #
+    #     #         if i == wlen - 1:
+    #     #             # teminatore di parola
+    #     #             tmpd[c][None] = None
+    #     #         elif i == 1:
+    #     #             # parola non terminata ma ultima iterazione
+    #     #             tmpd[c][w[2:]] = {None:None}
+    #     #         else:
+    #     #             # parola ok fin qua, scorro avanti
+    #     #             tmpd = tmpd[c]
+
+    # def find_semiopt(self, word):
+    #     ret = -1
+    #     wl = list(word)
+    #     tmpd = self._d
+    #     wlen = len(word)
+    #     # scorro l'albero lettera per lettera finche' ci sono
+    #     for i, c in enumerate(wl):
+    #         if tmpd.has_key(c):
+    #             tmpd = tmpd[c]
+    #             continue
+    #         # ottimizzo il prossimo step e continuo la ricerca
+    #         for k in tmpd.keys():
+    #             if k is None:
+    #                 continue
+    #             if k.startswith(c):
+    #                 self._build_subdicts(tmpd)
+    #                 tmpd = tmpd[c]
+    #                 break
+    #         else:
+    #             break
+    #     else:
+    #         if tmpd.has_key(None):
+    #             # parola trovata
+    #             ret = 0
+    #         elif tmpd.keys():
+    #             # trovate piu di una parola
+    #             ret = 1
+    #     return ret
+
+    # def _build_subdicts(self, tmpd, keys=None):
+    #     """
+    #     Espande l'albero, creando i nodi superiori ad 1 carattere
+    #     trasforma da {'haha':{None:None}, 'he':{None:None}, 'baba':{None:None}}
+    #     a {'h':{'aha':{None:None}, 'e':{None:None}}, 'b':{'aba':{None:None}}}
+    #     """
+    #     if not keys:
+    #         keys = tmpd.keys()
+    #     for w in keys:
+    #         if w is None:
+    #             # parola finita, niente da espandere
+    #             continue
+    #         if len(w) == 1:
+    #             # mantengo chiavi ad 1 carattere, sono il punto di arrivo
+    #             continue
+    #         del tmpd[w]
+    #         c = w[0]
+    #         if not tmpd.has_key(c):
+    #             tmpd[c] = {}
+    #         #print c, tmpd[c], w[1:]
+    #         tmpd[c][w[1:]] = {None:None}
+                
+
 def solve_char(game, d, starts, srow, scol, usati, path):
     words = []
     for row, col in vicini(game, srow, scol, usati):
         neww = starts+game[row][col]
         tmppath = path+[(row, col)]
         w_in_d = d.find(neww)
-        #possibili = trova_in_dict(neww, d)
-        # con dict non ottimizzato
-        # # se non ho piu parole nel dizionario che iniziano con la parola a cui
-        # # sono arrivato ora mi fermo, non andrei daa nessuna parte
-        # if len(possibili) == 0:
-        #     #print 'Vicolo cieco', neww
-        #     continue
-        # # la parola attuale e' valida
-        # if neww in possibili:
-        #     print neww
-        #     words.append((neww, tmppath))
-        # con dict ottimizzato
         # se non ho piu parole nel dizionario che iniziano con la parola a cui
         # sono arrivato ora mi fermo, non andrei da nessuna parte
         if w_in_d == -1:
@@ -231,10 +313,14 @@ TEST=[['G', 'E', 'H', 'C'],
 if __name__=='__main__':
     print >>sys.stderr, "Carico dizionario e schema ..."
     d = load_dict('dicts/ita.dict')
-    d.build_stats()
-    g = gen_game(d.stats, 10, 10)
+    #d.build_stats()
+    #g = gen_game(d.stats, 4, 4)
+    g = TEST
     print g
     game = load_game(g)
+    #d.semi_optimize()
+    #d.optimize()
+
     print >>sys.stderr, "Inizio risoluzione ..."
     sol = solve(game, d)
     wuniq = []
