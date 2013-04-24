@@ -282,7 +282,50 @@ class MainWin(Gtk.Window):
         self.show_all()
 
     def on_options(self, optb):
-        pass
+        optw = Gtk.Window(Gtk.WindowType.TOPLEVEL, title="Rezzlu - Opzioni")
+        optw.set_default_size(300, 100)
+        hb = Gtk.HBox()
+        vbleft = Gtk.VBox()
+        vbright = Gtk.VBox()
+
+        nrows = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 2, 10, 1)
+        nrows.set_value(self.cfg.rows)
+        vbleft.pack_start(Gtk.Label("Numero di righe"), True, True, 0)
+        vbright.pack_start(nrows, True, True, 0)
+
+        ncols = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 2, 10, 1)
+        ncols.set_value(self.cfg.columns)
+        vbleft.pack_start(Gtk.Label("Numero di colonne"), True, True, 0)
+        vbright.pack_start(ncols, True, True, 0)
+
+        cblang = Gtk.ComboBoxText()
+        i = 0
+        for i, lang in enumerate(['ita']):
+            if lang == self.cfg.lang:
+                cur_index = i
+            cblang.append_text(lang)
+        cblang.set_active(cur_index)
+        vbleft.pack_start(Gtk.Label("Dizionario"), True, True, 0)
+        vbright.pack_start(cblang, True, True, 0)
+
+        solb = Gtk.CheckButton()
+        solb.set_active(self.cfg.solve_all)
+        vbleft.pack_start(Gtk.Label("Risoluzione automatica"), True, True, 0)
+        vbright.pack_start(solb, True, True, 0)
+
+        hb.pack_start(vbleft, True, True, 0)
+        hb.pack_end(vbright, True, True, 0)
+        optw.add(hb)
+
+        def on_close(*a):
+            self.cfg.rows = int(nrows.get_value())
+            self.cfg.columns = int(ncols.get_value())
+            self.cfg.lang = cblang.get_active_text()
+            self.cfg.solve_all = solb.get_active()
+            optw.destroy()
+
+        optw.connect("delete-event", on_close)
+        optw.show_all()
 
     def on_stop(self, stopb):
         self.set_start_buttons()
