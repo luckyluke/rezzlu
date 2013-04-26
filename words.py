@@ -36,6 +36,8 @@ class GameManager(object):
         wm.schema = self.get_schema()
         wm.rows = self.cfg.rows
         wm.cols = self.cfg.columns
+        import string
+        wm.cvalues = dict([(c, 1) for c in string.ascii_lowercase])
         if self.cfg.solve_all:
             wm.sol = self.solve_schema(wm.schema, progress_cb)
         else:
@@ -51,6 +53,7 @@ class WordManager(object):
         self.cols = 0
         self.sol = []
         self.wdict = None
+        self.cvalues = {}
 
     def put_char(self, char):
         """ Ritorna la parola selezionata"""
@@ -58,7 +61,6 @@ class WordManager(object):
             # tornato indietro di una
             if len(self._tmpw) > 1 and char is self._tmpw[-2]:
                 self._tmpw = self._tmpw[:-1]
-                print [c.char for c in self._tmpw]
                 return self._tmpw
 
             # lettera gia selezionata
@@ -71,7 +73,6 @@ class WordManager(object):
                 return self._tmpw
 
         self._tmpw.append(char)
-        print 'Word:', ''.join([c.char for c in self._tmpw])
         return self._tmpw
 
     def stop_word(self):
