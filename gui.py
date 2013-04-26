@@ -232,7 +232,7 @@ class RezTableNew(Gtk.EventBox):
 
     def spopola(self):
         for sigid in self._sigtable:
-            self.disconnect(sigid)
+            self._tab.disconnect(sigid)
         self._sigtable = []
         self.remove(self._tab)
         self._tab = None
