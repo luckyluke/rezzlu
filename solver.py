@@ -289,11 +289,13 @@ def load_game(game):
 def gen_game(stats, rows, columns):
     # genero distribuzine cumulativa
     ptmp = 0
-    for k, v in stats.copy().iteritems():
+    pstats = {}
+    for k, v in stats.iteritems():
         ptmp += v
-        stats[k] = ptmp
+        #stats[k] = ptmp
+        pstats[ptmp] = k
     # uso prob cumul come chiave
-    pstats = dict([(v, k) for k, v in stats.iteritems()])
+    #pstats = dict([(v, k) for k, v in stats.iteritems()])
     pvs = pstats.keys()
     pvs.sort()
     chars = []

@@ -36,13 +36,19 @@ class GameManager(object):
         wm.schema = self.get_schema()
         wm.rows = self.cfg.rows
         wm.cols = self.cfg.columns
-        import string
-        wm.cvalues = dict([(c, 1) for c in string.ascii_lowercase])
+        wm.cvalues = self.get_values()
         if self.cfg.solve_all:
             wm.sol = self.solve_schema(wm.schema, progress_cb)
         else:
             wm.wdict = self.wdict
         return wm
+
+    def get_values(self):
+        vals = {}
+        minv = 1/max(self.wdict.stats.values())
+        for k, v in self.wdict.stats.iteritems():
+            vals[k] = int(1/(v*minv))
+        return vals
 
 class WordManager(object):
     """ logica di gestione del gioco """
