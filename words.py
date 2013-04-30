@@ -60,6 +60,8 @@ class WordManager(object):
         self.sol = []
         self.wdict = None
         self.cvalues = {}
+        self.found = []
+        self.score = 0
 
     def put_char(self, char):
         """ Ritorna la parola selezionata"""
@@ -88,9 +90,15 @@ class WordManager(object):
 
     def check_word(self, word):
         word = word.lower()
-        if (self.wdict and  self.wdict.find(word) == 0) or\
-                (self.sol and word in [w for w, path in self.sol]):
+        if (word not in self.found) and\
+                ((self.sol and word in [w for w, path in self.sol]) or \
+                     self.wdict.find(word) == 0):
             print "Trovato", word, "!!!!!!"
+            self.found.append(word)
+            self.score += self.calc_score(word)
             return True
         else:
             return False
+
+    def calc_score(self, word):
+        return sum([self.cvalues[c] for c in word])
