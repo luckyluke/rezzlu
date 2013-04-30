@@ -246,7 +246,7 @@ class RezTableNew(Gtk.EventBox):
         #print cr.get_font_face().get_family()
         # family italic bold
         cr.select_font_face("Sans", 0, 1)
-        cr.set_font_size((self.charh - 2*margin)*0.9)
+        cr.set_font_size((self.charh - 2*margin)*0.8)
         b_x, b_y, cwidth, cheight, ad_x, ad_y = cr.text_extents(c.char)
         border_x = (self.charw - cwidth)/2
         border_y = (self.charh - cheight)/2
@@ -322,7 +322,11 @@ class RezTableNew(Gtk.EventBox):
         cr.show_text(c.char)
 
         # disegna punti del char
-        cr.set_font_size(10)
+        cr.set_font_size((self.charh - 2*margin)*0.2)
+        b_x, b_y, cwidth, cheight, ad_x, ad_y = cr.text_extents(str(c.value))
+        cr.move_to(start_x + margin  + (self.charw - 2*margin)*0.8,
+                   start_y + margin + cheight + (self.charh - 2*margin)*0.05)
+        #cr.set_font_size(10)
         cr.show_text(str(c.value))
 
     def on_resize(self, obj, data):
