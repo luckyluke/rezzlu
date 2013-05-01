@@ -339,7 +339,6 @@ class RezTableNew(Gtk.EventBox):
 
     def _get_char_by_cursor(self, ev):
         if ev.x < 0 or ev.x > self.gridw or ev.y < 0 or ev.y > self.gridh:
-            #print "out of range"
             return None
 
         # considera il contorno attorno alle lettere
@@ -437,10 +436,6 @@ class MainWin(Gtk.Window):
 
         self.add(box)
         self.tabbox = box
-
-        #w, h = self.get_default_size()
-        #self.tab.popola(w, h)
-        #_glib.idle_add(self.tab.popola, TEST)
 
     def set_start_buttons(self):
         for c in self.bbox.get_children():
@@ -591,15 +586,8 @@ class MainWin(Gtk.Window):
 
         self.show_all()
 
-    #def show(self):
-    #    Gtk.Window.show(self)
-    #    self.tab.popola(TEST)
-    #    GObject.idle_add(self.tab.popola, TEST)
-    #    Gdk.threads_add_idle(_glib.PRIORITY_DEFAULT_IDLE, self.tab.popola, TEST)
-
 
 def main_loop(gm):
-    #Gdk.threads_init()
     win = MainWin(gm)
     win.connect("delete-event", Gtk.main_quit)
     win.show_all()
