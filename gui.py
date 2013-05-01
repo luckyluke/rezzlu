@@ -527,8 +527,8 @@ class MainWin(Gtk.Window):
         #self.tab = RezTable()
         self.tab = RezTableNew(self)
 
-        w, h = self.get_size()
-        self.tab.popola(w, h, wm)
+        ww, wh = self.get_size()
+        self.tab.popola(ww, wh - self.bbox.get_allocated_height(), wm)
 
         self.tabbox.pack_start(self.tab, False, False, 0)
         self.set_run_buttons()
