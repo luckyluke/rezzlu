@@ -326,8 +326,17 @@ class RezTableNew(Gtk.EventBox):
         b_x, b_y, cwidth, cheight, ad_x, ad_y = cr.text_extents(str(c.value))
         cr.move_to(start_x + margin  + (self.charw - 2*margin)*0.8,
                    start_y + margin + cheight + (self.charh - 2*margin)*0.05)
-        #cr.set_font_size(10)
         cr.show_text(str(c.value))
+
+        # disegna bonus
+        for bonus, val in self.wm.bonus.iteritems():
+            if (c.row, c.col) != val:
+                continue
+            cr.set_font_size((self.charh - 2*margin)*0.2)
+            b_x, b_y, cwidth, cheight, ad_x, ad_y = cr.text_extents(bonus)
+            cr.move_to(start_x + margin  + (self.charw - 2*margin)*0.2,
+                       start_y + margin + cheight + (self.charh - 2*margin)*0.03)
+            cr.show_text(bonus)
 
     def on_resize(self, obj, data):
         rect = obj.get_allocation()
@@ -406,7 +415,8 @@ class RezTableNew(Gtk.EventBox):
 
         wchars = self.wm.stop_word()
         word = ''.join([c.char for c in wchars])
-        if self.wm.check_word(word):
+        path = [(c.row, c.col) for c in wchars]
+        if self.wm.check_word(word, path):
             print "HEHEHEHE"
         self.parent.update_word("")
 

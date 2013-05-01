@@ -34,6 +34,10 @@ class GameManager(object):
     def get_wm(self, progress_cb=None):
         wm = WordManager()
         wm.schema = self.get_schema()
+        wm.bonus = {'dw':(1, 0),
+                    'dc':(3, 2),
+                    'tw':(1, 1),
+                    'tc':(2, 1)}
         wm.rows = self.cfg.rows
         wm.cols = self.cfg.columns
         wm.cvalues = self.get_values()
@@ -55,6 +59,7 @@ class WordManager(object):
     def __init__(self):
         self._tmpw = []
         self.schema = []
+        self.bonus = {}
         self.rows = 0
         self.cols = 0
         self.sol = []
@@ -88,17 +93,32 @@ class WordManager(object):
         self._tmpw = []
         return word
 
-    def check_word(self, word):
+    def check_word(self, word, path):
         word = word.lower()
         if (word not in self.found) and\
                 ((self.sol and word in [w for w, path in self.sol]) or \
                      self.wdict.find(word) == 0):
             print "Trovato", word, "!!!!!!"
             self.found.append(word)
-            self.score += self.calc_score(word)
+            self.score += self.calc_score(word, path)
             return True
         else:
             return False
 
-    def calc_score(self, word):
-        return sum([self.cvalues[c] for c in word])
+    def calc_score(self, word, path):
+        mul = 1
+        summ = 1
+        if self.bonus['dw'] in path:
+            mul *= 2
+        if self.bonus['tw'] in path:
+            mul *= 3
+        if self.bonus['dc'] in path:
+            dci = path.index(self.bonus['dc'])
+            dcc = path.count(self.bonus['dc'])
+            summ += self.cvalues[word[dci]]*dcc
+        if self.bonus['tc'] in path:
+            tci = path.index(self.bonus['tc'])
+            tcc = path.count(self.bonus['tc'])
+            summ += 2*self.cvalues[word[tci]]*tcc
+            
+        return mul*(sum([self.cvalues[c] for c in word]) + summ)
