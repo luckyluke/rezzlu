@@ -418,6 +418,7 @@ class RezTableNew(Gtk.EventBox):
         path = [(c.row, c.col) for c in wchars]
         if self.wm.check_word(word, path):
             print "HEHEHEHE"
+            self.parent.scorel.set_label(str(self.wm.score))
         self.parent.update_word("")
 
 
@@ -468,6 +469,8 @@ class MainWin(Gtk.Window):
         stopb.connect("clicked", self.on_stop)
         self.bbox.pack_start(stopb, False, False, 0)
 
+        self.scorel = Gtk.Label(label="0")
+        self.bbox.pack_start(self.scorel, False, False, 0)
         self.wordl = Gtk.Label(label="")
         self.bbox.pack_start(self.wordl, True, True, 0)
 
@@ -506,7 +509,7 @@ class MainWin(Gtk.Window):
 
     def on_timeout(self):
         #resw = self.show_results(self.tab.wm)
-        self.on_stop()
+        self.on_stop(None)
         #resw.connect("delete-event", self.on_stop)
 
     def on_start(self, starttb):
