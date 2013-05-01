@@ -487,8 +487,22 @@ class MainWin(Gtk.Window):
         self.wordl.set_label(word)
         #self.show_all()
 
+    def show_results(self, wm):
+        resw = Gtk.Window(Gtk.WindowType.TOPLEVEL, title="Rezzlu - Risultati")
+        resw.set_default_size(600, 300)
+
+        mainb = Gtk.VBox()
+        mainb.pack_start(Gtk.Label(label="Punteggio: %d" %wm.score),
+                         True, True, 0)
+
+        resw.add(mainb)
+        resw.show_all()
+        return resw
+
     def on_timeout(self):
-        print "timeout!"
+        #resw = self.show_results(self.tab.wm)
+        self.on_stop()
+        #resw.connect("delete-event", self.on_stop)
 
     def on_start(self, starttb):
         self.gm.do_config(self.cfg)
@@ -567,6 +581,7 @@ class MainWin(Gtk.Window):
         optw.show_all()
 
     def on_stop(self, stopb):
+        self.show_results(self.tab.wm)
         self.set_start_buttons()
 
         self.tabbox.remove(self.tab)
