@@ -206,15 +206,15 @@ class RezTableNew(Gtk.EventBox):
         self._tab = None
         self._sigtable = []
 
-    def popola(self, w, h, wm):
-        self.wm = wm
+    def popola(self, w, h, gm):
+        self.gm = gm
         self.chars = []
-        self.rows = len(wm.schema)
-        self.cols = len(wm.schema[0])
+        self.rows = len(gm.schema)
+        self.cols = len(gm.schema[0])
         for i in range(self.rows):
             for j in range(self.cols):
-                c = wm.schema[i][j]
-                cval = self.wm.cvalues[c.lower()]
+                c = gm.schema[i][j]
+                cval = self.gm.cvalues[c.lower()]
                 self.chars.append(RezCharNew(i, j, c, cval, None))
 
         self._tab = Gtk.DrawingArea()
@@ -329,7 +329,7 @@ class RezTableNew(Gtk.EventBox):
         cr.show_text(str(c.value))
 
         # disegna bonus
-        for bonus, val in self.wm.bonus.iteritems():
+        for bonus, val in self.gm.bonus.iteritems():
             if (c.row, c.col) != val:
                 continue
             cr.set_font_size((self.charh - 2*margin)*0.2)
@@ -367,7 +367,7 @@ class RezTableNew(Gtk.EventBox):
             return None
 
     def handle_char_pressed(self, char):
-        path = self.wm.put_char(char)
+        path = self.gm.put_char(char)
         for c in self.chars:
             if c not in path:
                 c.active = False
@@ -413,12 +413,12 @@ class RezTableNew(Gtk.EventBox):
 
         self._tab.queue_draw()
 
-        wchars = self.wm.stop_word()
+        wchars = self.gm.stop_word()
         word = ''.join([c.char for c in wchars])
         path = [(c.row, c.col) for c in wchars]
-        if self.wm.check_word(word, path):
+        if self.gm.check_word(word, path):
             print "HEHEHEHE"
-            self.parent.scorel.set_label(str(self.wm.score))
+            self.parent.scorel.set_label(str(self.gm.score))
         self.parent.update_word("")
 
 
@@ -432,7 +432,7 @@ class RezConfig:
 class MainWin(Gtk.Window):
     # tmp. carica da file
     cfg = RezConfig
-    def __init__(self, gm):
+    def __init__(self, sm):
         Gtk.Window.__init__(self, title="Rezzlu")
         self.set_default_size(400, 450)
 
@@ -440,7 +440,7 @@ class MainWin(Gtk.Window):
 
         self.set_start_buttons()
 
-        self.gm = gm
+        self.sm = sm
         self.tab = None
 
         self.add(self.box)
@@ -477,7 +477,7 @@ class MainWin(Gtk.Window):
         self.wordl = Gtk.Label(label="")
         wbox.pack_start(self.wordl, True, True, 0)
 
-        timer = self.gm.get_timer()
+        timer = self.sm.get_timer()
         timel = Gtk.Label(label="%s:%s" %(str(timer/60).zfill(2),
                                           str(timer%60).zfill(2)))
         timel.timer = timer
@@ -501,12 +501,12 @@ class MainWin(Gtk.Window):
         self.wordl.set_label(word)
         #self.show_all()
 
-    def show_results(self, wm):
+    def show_results(self, gm):
         resw = Gtk.Window(Gtk.WindowType.TOPLEVEL, title="Rezzlu - Risultati")
         resw.set_default_size(600, 300)
 
         mainb = Gtk.VBox()
-        mainb.pack_start(Gtk.Label(label="Punteggio: %d" %wm.score),
+        mainb.pack_start(Gtk.Label(label="Punteggio: %d" %gm.score),
                          True, True, 0)
 
         resw.add(mainb)
@@ -519,7 +519,7 @@ class MainWin(Gtk.Window):
         #resw.connect("delete-event", self.on_stop)
 
     def on_start(self, starttb):
-        self.gm.do_config(self.cfg)
+        self.sm.do_config(self.cfg)
 
         prog = Gtk.Spinner()
         progl = Gtk.Label("Generazione gioco ...")
@@ -532,7 +532,7 @@ class MainWin(Gtk.Window):
             while Gtk.events_pending():
                 Gtk.main_iteration()
 
-        wm = self.gm.get_wm(on_progress)
+        gm = self.sm.get_gm(on_progress)
 
         prog.stop()
         self.box.remove(prog)
@@ -547,7 +547,7 @@ class MainWin(Gtk.Window):
         for c in self.box.get_children():
             minh, nath = c.get_preferred_height_for_width(ww)
             wh -= nath
-        self.tab.popola(ww, wh, wm)
+        self.tab.popola(ww, wh, gm)
 
         self.box.pack_end(self.tab, False, False, 0)
         self.show_all()
@@ -599,7 +599,7 @@ class MainWin(Gtk.Window):
         optw.show_all()
 
     def on_stop(self, stopb):
-        self.show_results(self.tab.wm)
+        self.show_results(self.tab.gm)
         self.set_start_buttons()
 
         # evita warning nella rimozione, gli viene tolto il
@@ -613,8 +613,8 @@ class MainWin(Gtk.Window):
         self.show_all()
 
 
-def main_loop(gm):
-    win = MainWin(gm)
+def main_loop(sm):
+    win = MainWin(sm)
     win.connect("delete-event", Gtk.main_quit)
     win.show_all()
     Gtk.main()

@@ -1,4 +1,4 @@
-from words import GameManager
+from words import SchemaManager
 from gui import main_loop
 
 TEST=[['G', 'E', 'H', 'C'],
@@ -12,5 +12,5 @@ TEST=[['G', 'E', 'H', 'C'],
 #       ['A', 'A', 'A', 'A']]
 
 if __name__=='__main__':
-    gm = GameManager()
-    main_loop(gm)
+    sm = SchemaManager()
+    main_loop(sm)

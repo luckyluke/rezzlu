@@ -1,7 +1,7 @@
 import solver
 
 
-class GameManager(object):
+class SchemaManager(object):
     cfg = None
 
     def do_config(self, cfg):
@@ -31,21 +31,21 @@ class GameManager(object):
         self.wdict.read('dicts/'+lang+'.dict')
         self.wdict.lang = lang
 
-    def get_wm(self, progress_cb=None):
-        wm = WordManager()
-        wm.schema = self.get_schema()
-        wm.bonus = {'dw':(1, 0),
+    def get_gm(self, progress_cb=None):
+        gm = GameManager()
+        gm.schema = self.get_schema()
+        gm.bonus = {'dw':(1, 0),
                     'dc':(3, 2),
                     'tw':(1, 1),
                     'tc':(2, 1)}
-        wm.rows = self.cfg.rows
-        wm.cols = self.cfg.columns
-        wm.cvalues = self.get_values()
+        gm.rows = self.cfg.rows
+        gm.cols = self.cfg.columns
+        gm.cvalues = self.get_values()
         if self.cfg.solve_all:
-            wm.sol = self.solve_schema(wm.schema, progress_cb)
+            gm.sol = self.solve_schema(gm.schema, progress_cb)
         else:
-            wm.wdict = self.wdict
-        return wm
+            gm.wdict = self.wdict
+        return gm
 
     def get_values(self):
         vals = {}
@@ -54,7 +54,7 @@ class GameManager(object):
             vals[k] = int(1/(v*minv))
         return vals
 
-class WordManager(object):
+class GameManager(object):
     """ logica di gestione del gioco """
     def __init__(self):
         self._tmpw = []
