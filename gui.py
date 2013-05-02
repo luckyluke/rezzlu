@@ -514,9 +514,8 @@ class MainWin(Gtk.Window):
         return resw
 
     def on_timeout(self):
-        #resw = self.show_results(self.tab.wm)
-        self.on_stop(None)
-        #resw.connect("delete-event", self.on_stop)
+        resw = self.show_results(self.tab.gm)
+        resw.connect("delete-event", self.on_stop)
 
     def on_start(self, starttb):
         self.sm.do_config(self.cfg)
@@ -598,8 +597,7 @@ class MainWin(Gtk.Window):
         optw.connect("delete-event", on_close)
         optw.show_all()
 
-    def on_stop(self, stopb):
-        self.show_results(self.tab.gm)
+    def on_stop(self, widget, event=None):
         self.set_start_buttons()
 
         # evita warning nella rimozione, gli viene tolto il
