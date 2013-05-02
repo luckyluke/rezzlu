@@ -434,45 +434,48 @@ class MainWin(Gtk.Window):
     cfg = RezConfig
     def __init__(self, gm):
         Gtk.Window.__init__(self, title="Rezzlu")
-        self.set_default_size(400, 400)
+        self.set_default_size(400, 450)
 
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.bbox = Gtk.Box(homogeneous=True)
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         self.set_start_buttons()
-        box.pack_start(self.bbox, False, False, 0)
 
         self.gm = gm
         self.tab = None
 
-        self.add(box)
-        self.tabbox = box
+        self.add(self.box)
 
     def set_start_buttons(self):
-        for c in self.bbox.get_children():
-            self.bbox.remove(c)
+        for c in self.box.get_children():
+            self.box.remove(c)
             self.wordl = None
+
+        bbox = Gtk.Box(homogeneous=True)
 
         startb = Gtk.Button(label="Start")
         startb.connect("clicked", self.on_start)
-        self.bbox.pack_start(startb, True, False, 0)
+        bbox.pack_start(startb, True, False, 0)
 
         optb = Gtk.Button(label="Opzioni")
         optb.connect("clicked", self.on_options)
-        self.bbox.pack_start(optb, True, False, 0)
+        bbox.pack_start(optb, True, False, 0)
+        self.box.pack_start(bbox, False, False, 0)
 
     def set_run_buttons(self):
-        for c in self.bbox.get_children():
-            self.bbox.remove(c)
+        for c in self.box.get_children():
+            self.box.remove(c)
+
+        bbox = Gtk.Box(homogeneous=True)
+        wbox = Gtk.Box(homogeneous=True)
 
         stopb = Gtk.Button(label="Stop")
         stopb.connect("clicked", self.on_stop)
-        self.bbox.pack_start(stopb, False, False, 0)
+        bbox.pack_start(stopb, False, False, 0)
 
         self.scorel = Gtk.Label(label="0")
-        self.bbox.pack_start(self.scorel, False, False, 0)
+        bbox.pack_start(self.scorel, False, False, 0)
         self.wordl = Gtk.Label(label="")
-        self.bbox.pack_start(self.wordl, True, True, 0)
+        wbox.pack_start(self.wordl, True, True, 0)
 
         timer = self.gm.get_timer()
         timel = Gtk.Label(label="%s:%s" %(str(timer/60).zfill(2),
@@ -489,7 +492,10 @@ class MainWin(Gtk.Window):
             else:
                 return True
         GObject.timeout_add_seconds(1, on_timer, timel)
-        self.bbox.pack_start(timel, True, True, 0)
+
+        bbox.pack_start(timel, True, True, 0)
+        self.box.pack_start(bbox, False, False, 0)
+        self.box.pack_start(wbox, False, False, 0)
 
     def update_word(self, word):
         self.wordl.set_label(word)
@@ -517,10 +523,10 @@ class MainWin(Gtk.Window):
 
         prog = Gtk.Spinner()
         progl = Gtk.Label("Generazione gioco ...")
-        self.tabbox.pack_start(prog, True, True, 0)
-        self.tabbox.pack_end(progl, True, False, 0)
+        self.box.pack_end(prog, True, True, 0)
+        self.box.pack_end(progl, True, False, 0)
         prog.start()
-        self.tabbox.show_all()
+        self.box.show_all()
 
         def on_progress():
             while Gtk.events_pending():
@@ -529,17 +535,21 @@ class MainWin(Gtk.Window):
         wm = self.gm.get_wm(on_progress)
 
         prog.stop()
-        self.tabbox.remove(prog)
-        self.tabbox.remove(progl)
+        self.box.remove(prog)
+        self.box.remove(progl)
+        self.set_run_buttons()
+        self.show_all()
 
         #self.tab = RezTable()
         self.tab = RezTableNew(self)
 
         ww, wh = self.get_size()
-        self.tab.popola(ww, wh - self.bbox.get_allocated_height(), wm)
+        for c in self.box.get_children():
+            minh, nath = c.get_preferred_height_for_width(ww)
+            wh -= nath
+        self.tab.popola(ww, wh, wm)
 
-        self.tabbox.pack_start(self.tab, False, False, 0)
-        self.set_run_buttons()
+        self.box.pack_end(self.tab, False, False, 0)
         self.show_all()
 
     def on_options(self, optb):
@@ -592,7 +602,10 @@ class MainWin(Gtk.Window):
         self.show_results(self.tab.wm)
         self.set_start_buttons()
 
-        self.tabbox.remove(self.tab)
+        # evita warning nella rimozione, gli viene tolto il
+        # parent in qualche modo
+        self.tab.set_parent(self.box)
+        self.box.remove(self.tab)
         self.tab.spopola()
         self.tab.destroy()
         self.tab = None
