@@ -369,7 +369,7 @@ class MainWin(Gtk.Window):
             wh -= nath
         self.tab.popola(ww, wh, gm)
 
-        self.box.pack_end(self.tab, False, False, 0)
+        self.box.pack_end(self.tab, True, True, 0)
         self.show_all()
 
     def on_options(self, optb):
