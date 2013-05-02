@@ -336,6 +336,10 @@ class MainWin(Gtk.Window):
         resw.connect("delete-event", self.on_stop)
 
     def on_start(self, starttb):
+        for c in self.box.get_children():
+            if isinstance(c, Gtk.Spinner):
+                return
+
         self.sm.do_config(self.cfg)
 
         prog = Gtk.Spinner()
