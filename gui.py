@@ -1,4 +1,3 @@
-import os
 import math
 
 from gi.repository import Gtk, Gdk, GObject, GLib
