@@ -95,13 +95,13 @@ class GameManager(object):
 
     def check_word(self, word, path):
         word = word.lower()
-        if (word not in self.found) and\
-                ((self.sol and word in [w for w, path in self.sol]) or \
-                     self.wdict.find(word) == 0):
-            print "Trovato", word, "!!!!!!"
-            self.found.append(word)
-            self.score += self.calc_score(word, path)
-            return True
+        if (word not in self.found):
+            if (self.sol and word in [w for w, path in self.sol]) or\
+                     (self.wdict and self.wdict.find(word) == 0):
+                print "Trovato", word, "!!!!!!"
+                self.found.append(word)
+                self.score += self.calc_score(word, path)
+                return True
         else:
             return False
 
