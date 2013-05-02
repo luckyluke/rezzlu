@@ -4,188 +4,7 @@ import math
 from gi.repository import Gtk, Gdk, GObject, GLib
 from gi.repository.GdkPixbuf import Pixbuf, InterpType
 
-# class RezChar(Gtk.Image):
-#     def __init__(self, char, row, col, w, h):
-#         """
-#         row\col 0 1 2 3
-#            0    x x x x
-#            1    x x x x
-#            2    x x x x
-#            3    x x x x
-#         """
-#         Gtk.Image.__init__(self)
-#         self.row = row
-#         self.col = col
-#         self.char = char
-#         self._active = None
-#         self._pre = None
-#         self._post = None
-#         self._width = w
-#         self._height = h
-
-#     def set_active(self, active, pre=None, post=None):
-#         if self._active == active and self._pre == pre and self._post == post:
-#             return
-#         if active:
-#             fname = "images/cell_%s_active.svg" %self.char
-#             self._pre = pre
-#             self._post = post
-#         else:
-#             fname = "images/cell_%s.svg" %self.char
-#             self._pre = self._post = None
-
-#         pre_arrow = self.get_super_fnames(pre)
-#         post_arrow = self.get_super_fnames(post)
-#         try:
-#             pix = Pixbuf.new_from_file_at_size(fname, self._width, self._height)
-#             if pre_arrow:
-#                 pix_pre = Pixbuf.new_from_file_at_size(pre_arrow,
-#                                                        self._width, self._height)
-#                 pix_pre.composite(pix, 0, 0, pix.props.width, pix.props.height,
-#                                   0, 0, 1.0, 1.0, InterpType.HYPER, 255)
-#             if post_arrow:
-#                 pix_post = Pixbuf.new_from_file_at_size(post_arrow,
-#                                                         self._width, self._height)
-#                 pix_post.composite(pix, 0, 0, pix.props.width, pix.props.height,
-#                                    0, 0, 1.0, 1.0, InterpType.HYPER, 255)
-                
-#             self.set_from_pixbuf(pix)
-#             self._active = active
-#         except GLib.GError, e:
-#             print 'error', e
-
-#     def get_super_fnames(self, char):
-#         """
-#         Coordinate per la freccia:
-
-#         (-1, -1) (-1, 0) (-1, 1)
-
-#         (0, -1)           (0, 1)
-
-#         (1, -1)   (1, 0)  (1, 1)
-
-#         """
-#         if char:
-#             arrow_x, arrow_y = char.row - self.row, char.col -  self.col
-#             if (arrow_x, arrow_y) != (0, 0):
-#                 fname = "images/arrow_%d_%d.svg" %(arrow_x, arrow_y)
-#                 if os.path.exists(fname):
-#                     return fname
-#         return None
-
-#     def __str__(self):
-#         return "%s at (%d, %d)" %(self.char, self.row, self.col)
-
-# class RezTable(Gtk.EventBox):
-#     _border = 10
-#     def __init__(self):
-#         Gtk.EventBox.__init__(self)
-#         self.set_above_child(True)
-#         self._sigtable = []
-
-#     def popola(self, w, h, wm):
-#         charmatrix = wm.schema
-#         w = w / len(charmatrix)
-#         h = h / len(charmatrix[0])
-#         charw = w - self._border
-#         charh = h - self._border
-#         if charw < 1 or charh < 1:
-#             charw = charh = 75
-
-#         self._tab = Gtk.Table(wm.rows, wm.cols, True)
-#         self._tab.set_row_spacings(0)
-#         self._tab.set_col_spacings(0)
-#         for i in range(wm.rows):
-#             for j in range(wm.cols):
-#                 b = RezChar(charmatrix[i][j], i, j, charw, charh)
-#                 b.set_active(False)
-#                 self._tab.attach(b, j, j+1, i, i+1,
-#                                  Gtk.AttachOptions.EXPAND,
-#                                  Gtk.AttachOptions.EXPAND)
-#                 #b.set_property("expand", True)
-#                 #self._tab.attach(b, j, i, 1, 1)
-
-#         sigid = self.connect("button-press-event", self.button_press_cb)
-#         self._sigtable.append(sigid)
-#         sigid = self.connect("button-release-event", self.button_release_cb)
-#         self._sigtable.append(sigid)
-#         sigid = self.connect("motion-notify-event", self.motion_notify_cb)
-#         self._sigtable.append(sigid)
-
-#         self.add(self._tab)
-#         self.wm = wm
-
-#     def spopola(self):
-#         for sigid in self._sigtable:
-#             self.disconnect(sigid)
-#         self._sigtable = []
-#         self.remove(self._tab)
-
-#     def _get_char_by_cursor(self, ev):
-#         rect = self._tab.get_allocation()
-#         if ev.x < 0 or ev.x > rect.width or ev.y < 0 or ev.y > rect.height:
-#             #print "out of range"
-#             return None
-
-#         char_w = rect.width / self.wm.rows
-#         char_h = rect.height / self.wm.cols
-
-#         # considera il contorno attorno alle lettere
-#         rel_x = ev.x % char_w
-#         rel_y = ev.y % char_h
-#         if rel_x < self._border or rel_x > (char_w - self._border) or\
-#                 rel_y < self._border or rel_y > (char_h - self._border):
-#             return None
-#         col = int(ev.x / char_w)
-#         row = int(ev.y / char_h)
-#         for child in self._tab.get_children():
-#             if child.row == row and child.col == col:
-#                 return child
-#         else:
-#             print 'char inesistente pos', tab_x, tab_y
-#             return None
-
-#     def handle_char_pressed(self, char):
-#         path = self.wm.put_char(char)
-#         for c in self._tab.get_children():
-#             if c not in path:
-#                 c.set_active(False)
-#         pre = cur = post = path[0]
-#         i = 0
-#         plen = len(path)
-#         while i < plen:
-#             if i < plen-1:
-#                 post = path[i+1]
-#             cur.set_active(True, pre, post)
-#             pre, cur = cur, post
-#             i += 1
-
-#     def motion_notify_cb(self, obj, event):
-#         # sembra che l'evento sia generato solo quando si clicca
-#         # in caso contrario dovrei installare la callback in caso di button_press
-#         char = self._get_char_by_cursor(event)
-#         if char:
-#             # continuo a raccogliere la sequenza di char
-#             self.handle_char_pressed(char)
-
-#     def button_press_cb(self, tab, event):
-#         # inizio a raccogliere la sequenza di char
-#         char = self._get_char_by_cursor(event)
-#         if char:
-#             self.handle_char_pressed(char)
-
-#     def button_release_cb(self, tab, event):
-#         # fine raccolta sequenza char
-#         for child in self._tab.get_children():
-#             child.set_active(False)
-
-#         wchars = self.wm.stop_word()
-#         word = ''.join([c.char for c in wchars])
-#         if self.wm.check_word(word):
-#             print "HEHEHEHE"
-
-
-class RezCharNew(object):
+class RezChar(object):
     def __init__(self, row, col, char, value, opts):
         self.row, self.col, self.char = row, col, char
         self.value, self.options = value, opts
@@ -198,7 +17,7 @@ class RezCharNew(object):
             and self.char == o.char and self.active == o.active\
             and self.arrow_x == o.arrow_x and self.arrow_y == o.arrow_y
 
-class RezTableNew(Gtk.EventBox):
+class RezTable(Gtk.EventBox):
     _border = 10
     def __init__(self, parent):
         Gtk.EventBox.__init__(self)
@@ -215,7 +34,7 @@ class RezTableNew(Gtk.EventBox):
             for j in range(self.cols):
                 c = gm.schema[i][j]
                 cval = self.gm.cvalues[c.lower()]
-                self.chars.append(RezCharNew(i, j, c, cval, None))
+                self.chars.append(RezChar(i, j, c, cval, None))
 
         self._tab = Gtk.DrawingArea()
         self.add(self._tab)
@@ -539,8 +358,7 @@ class MainWin(Gtk.Window):
         self.set_run_buttons()
         self.show_all()
 
-        #self.tab = RezTable()
-        self.tab = RezTableNew(self)
+        self.tab = RezTable(self)
 
         ww, wh = self.get_size()
         for c in self.box.get_children():
