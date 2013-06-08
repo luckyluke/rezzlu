@@ -9,6 +9,7 @@ struct wdict* wdict_alloc(char ch, int n_chars){
   struct wdict* tmp;
   tmp = malloc(sizeof(struct wdict));
   tmp->ch = ch;
+  tmp->_n_chars = n_chars;
   if (tmp){
     tmp->next = malloc(sizeof(struct wdict*)*n_chars);
     if (tmp->next)
@@ -20,6 +21,14 @@ struct wdict* wdict_alloc(char ch, int n_chars){
 }
 
 void wdict_free(struct wdict* wd){
+  int i;
+
+  for (i=0; i<wd->_n_chars; i++){
+    if (wd->next[i] != NULL)
+      wdict_free(wd->next[i]);
+  }
+  free(wd->next);
+  free(wd);
 }
 
 int _get_char_index(char ch){
@@ -97,72 +106,81 @@ dict_t* load_dict(const char* fname)
   };
   free(wbuf);
 
-  printf("Caricate %d parole\n", d->dlen);
-
   fclose(f);
 
   return d;
 }
 
 void free_dict(dict_t* d){
+  wdict_free(d->dict);
+  free(d);
 }
 
-void _print_subtree(struct wdict* wd, char* partial, int n_chars){
+void _walk_subtree(struct wdict* wd, char* partial, int n_chars, word_f f){
   int i;
-  int subtree_pos=strlen(partial);
+  int subtree_pos = strlen(partial);
+  char* next_partial = malloc(subtree_pos+2);
+
+  snprintf(next_partial, subtree_pos+2, "%s%c", partial, wd->ch);
+
   if (wd->end > 0)
-    printf("%s%c\n", partial, wd->ch);
+    f(next_partial);
 
   for (i=0; i<n_chars; i++){
-    if (wd->next[i] != NULL){
-      partial = realloc(partial, subtree_pos+2);
-      partial[subtree_pos] = wd->ch;
-      partial[subtree_pos+1] = '\0';
-      _print_subtree(wd->next[i], partial, n_chars);
-    }
+    if (wd->next[i] != NULL)
+      _walk_subtree(wd->next[i], next_partial, n_chars, f);
   }
+
+  free(next_partial);
 }
 
-void print_dict(dict_t* d){
+void walk_dict(dict_t* d, word_f f){
   int i;
   char* tmps = malloc(sizeof(char));
 
   for (i=0; i<d->n_chars; i++){
     if (d->dict->next[i] != NULL){
       tmps[0] = '\0';
-      _print_subtree(d->dict->next[i], tmps, d->n_chars);
+      _walk_subtree(d->dict->next[i], tmps, d->n_chars, f);
     }
   }
 
   free(tmps);
 }
 
+void _print_word(char* word){
+  printf("%s\n", word);
+}
+
+void print_dict(dict_t *d){
+  walk_dict(d, _print_word);
+}
+
 int lookup_dict(dict_t* d, const char* word){
-  int i, ret;
+  int i, ret, found=0;
   struct wdict* wd=d->dict;
   int wlen=strlen(word);
   int cindex;
-  printf("%d\n", wlen);
 
   for (i=0; i<wlen; i++){
-    cindex = _get_index_char(word[0]);
+    cindex = _get_char_index(word[i]);
     if (wd->next[cindex] != NULL){
-      if (wd->end > 0){
-	ret = 0;
-	break;
-      }
       wd = wd->next[cindex];
+      if ((wd->end > 0) && (i == wlen-1))
+	found += 1;
     }
-    else if (i == wlen){
-      /* dict continua dopo la parola ma la parola non e' intera */
-      ret = 1;
+    else
       break;
-    }
-    else{
-      /* dict finito prima della parola, non ci puo essere */
-      ret = -1;
-      break;
-    }
   }
+
+  if (i == wlen){
+    if (found == 1)
+      ret = 0;
+    else
+      ret =  1;
+  }
+  else
+    ret = -1;
+
   return ret;
 }

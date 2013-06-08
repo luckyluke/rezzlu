@@ -15,6 +15,7 @@ struct wdict{
   char ch;
   short int end;
   struct wdict** next;
+  int _n_chars;
 };
 
 typedef struct {
@@ -30,6 +31,10 @@ typedef struct {
 dict_t* load_dict(const char* fname);
 void free_dict(dict_t* d);
 int lookup_dict(dict_t* d, const char* word);
+void free_dict(dict_t* d);
 void print_dict(dict_t* d);
+
+typedef void (*word_f)(char*);
+void walk_dict(dict_t* d, word_f f);
 
 #endif /* DICT_H */
