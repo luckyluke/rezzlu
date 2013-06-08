@@ -5,85 +5,6 @@
 
 #include "dict.h"
 
-
-/* struct wlist* wlist_alloc(char* word){ */
-/*   struct wlist* wl; */
-/*   wl = malloc(sizeof(struct wlist)); */
-/*   if (wl){ */
-/*     size_t wlen = strlen(word); */
-/*     wl->word = malloc((wlen+1)*sizeof(char)); */
-/*     strcpy(wl->word, word); */
-/*     wl->next = NULL; */
-/*   } */
-/*   return wl; */
-/* } */
-
-/* struct wlist* get_next(struct wlist* wl){ */
-/*   while (wl->next != NULL) */
-/*     wl = wl->next; */
-/*   return wl; */
-/* } */
-
-/* struct wlist* wlist_append(struct wlist* wl, char* word){ */
-/*   struct wlist *newl, *oldl; */
-/*   if (! wl){ */
-/*     wl = wlist_alloc(word); */
-/*     return wl; */
-/*   } */
-/*   newl = wlist_alloc(word); */
-/*   if (! newl){ */
-/*     perror("wlist append"); */
-/*     return NULL; */
-/*   } */
-/*   oldl = wl; */
-/*   wl = get_next(wl); */
-/*   wl->next = newl; */
-/*   return oldl; */
-/* } */
-
-
-/* dict_t* load_dict(const char* fname) */
-/* { */
-/*   FILE* f; */
-/*   char* wbuf; */
-/*   size_t nbuf=20; */
-/*   dict_t* d; */
-/*   struct wlist* wl; */
-
-/*   f = fopen(fname, "r"); */
-/*   if (f == NULL){ */
-/*     perror("Apertura dict"); */
-/*     return NULL; */
-/*   } */
-
-/*   d = malloc(sizeof(dict_t)); */
-/*   d->dlist = NULL; */
-/*   d->dlen = 0; */
-
-/*   wbuf = malloc((nbuf + 1)*sizeof(char)); */
-/*   while (getline(&wbuf, &nbuf, f) > 0){ */
-/*     printf("Append\n"); */
-/*     d->dlist = wlist_append(d->dlist, wbuf); */
-/*     d->dlen++; */
-/*     printf("%d\n", d->dlen); */
-/*   }; */
-/*   free(wbuf); */
-
-/*   printf("Caricate %d parole\n", d->dlen); */
-/*   wl = d->dlist; */
-/*   while (wl != NULL){ */
-/*     printf("%s\n", wl->word); */
-/*     wl = wl->next; */
-/*   } */
-
-/*   fclose(f); */
-
-/*   return d; */
-/* } */
-
-
-
-
 struct wdict* wdict_alloc(char ch, int n_chars){
   struct wdict* tmp;
   tmp = malloc(sizeof(struct wdict));
@@ -94,6 +15,7 @@ struct wdict* wdict_alloc(char ch, int n_chars){
       return tmp;
     free(tmp);
   }
+  printf("z\n");
   return NULL;
 }
 
@@ -105,33 +27,37 @@ int _get_char_index(char ch){
   return (int) (ch - 'a');
 }
 
-struct wdict* wdict_insert(struct wdict* wd, const char* word, int n_chars){
+char _get_index_char(int i){
+  return (char)i + 'a';
+}
+
+/* Inserisce la parola in wd->next se non e' finita
+ * Se e' finita setta il flag in wd
+*/
+int wdict_insert(struct wdict* wd, const char* word, int n_chars){
   int cp;
-  struct wdict* tmpd;
-  if (strlen(word) == 0)
-    return NULL;
-  //if (wd == NULL)
-  // return NULL;
+  if (strlen(word) == 0){
+    wd->end++;
+    return 0;
+  }
+  if (wd == NULL){
+    printf("wd==NULL!!!!!");
+    return -1;
+  }
 
   cp = _get_char_index(word[0]);
   if (cp > n_chars){
       printf("Errore: carattere %c overflow!!\n", cp);
-      return NULL;
+      return -1;
     }
   if (wd->next[cp] == NULL){
-    wd->next[cp] = wdict_alloc(cp, n_chars);
+    wd->next[cp] = wdict_alloc(word[0], n_chars);
     if (wd->next[cp] == NULL){
       printf("Errore: OOM!!");
-      return NULL;
+      return -1;
     }
   }
   return wdict_insert(wd->next[cp], ++word, n_chars);
-  tmpd = wdict_insert(wd->next[cp], ++word, n_chars);
-  printf("%s %p\n", word,  tmpd);
-  if (tmpd != NULL)
-    return wd;
-  else
-    return NULL;
 }
 
 dict_t* load_dict(const char* fname)
@@ -147,35 +73,31 @@ dict_t* load_dict(const char* fname)
     return NULL;
   }
 
+  /* create root node */
   d = malloc(sizeof(dict_t));
   d->n_chars = 26;
-  d->dict = wdict_alloc((char)0, d->n_chars);
+  d->dict = wdict_alloc(WDICT_ROOT, d->n_chars);
   if (d->dict == NULL){
     perror("Alloc dict");
     return NULL;
   }
   d->dlen = 0;
 
+  /* use a buffer to read and insert a word into the dict */
   wbuf = malloc((nbuf + 1)*sizeof(char));
   while (getline(&wbuf, &nbuf, f) > 0){
-    wdict_insert(d->dict, wbuf, d->n_chars);
-    /* if (wdict_insert(d->dict, wbuf, d->n_chars) == NULL){ */
-    /*   wdict_free(d->dict); */
-    /*   printf("OOM!!!\n"); */
-    /*   break; */
-    /* } */
-    d->dlen++;
+    int i;
+    for (i=0; i<strlen(wbuf); i++){
+      /* truncate word on line end */
+      if ((wbuf[i] == '\n') || (wbuf[i] == '\r'))
+	wbuf[i] = '\0';
+    }
+    if (wdict_insert(d->dict, wbuf, d->n_chars) == 0)
+      d->dlen++;
   };
   free(wbuf);
 
   printf("Caricate %d parole\n", d->dlen);
-  
-  /* struct wlist* wl=d->dlist; */
-  /* printf("%x\n", wl); */
-  /* while (wl != NULL){ */
-  /*   printf("%s\n", wl->word); */
-  /*   wl = wl->next; */
-  /* } */
 
   fclose(f);
 
@@ -185,61 +107,62 @@ dict_t* load_dict(const char* fname)
 void free_dict(dict_t* d){
 }
 
-int lookup_dict(dict_t* d, const char word){
-  return 0;
+void _print_subtree(struct wdict* wd, char* partial, int n_chars){
+  int i;
+  int subtree_pos=strlen(partial);
+  if (wd->end > 0)
+    printf("%s%c\n", partial, wd->ch);
+
+  for (i=0; i<n_chars; i++){
+    if (wd->next[i] != NULL){
+      partial = realloc(partial, subtree_pos+2);
+      partial[subtree_pos] = wd->ch;
+      partial[subtree_pos+1] = '\0';
+      _print_subtree(wd->next[i], partial, n_chars);
+    }
+  }
 }
 
-/* dict_t* load_dict(const char* fname) */
-/* { */
-/*   FILE* f; */
-/*   char* wbuf; */
-/*   size_t nbuf=20; */
-/*   dict_t* d; */
-/*   int di=0; */
+void print_dict(dict_t* d){
+  int i;
+  char* tmps = malloc(sizeof(char));
 
-/*   f = fopen(fname, "r"); */
-/*   if (f == NULL){ */
-/*     perror("Apertura dict"); */
-/*     return NULL; */
-/*   } */
-/*   mtrace(); */
+  for (i=0; i<d->n_chars; i++){
+    if (d->dict->next[i] != NULL){
+      tmps[0] = '\0';
+      _print_subtree(d->dict->next[i], tmps, d->n_chars);
+    }
+  }
 
-/*   d = malloc(sizeof(dict_t)); */
-/*   d->dlist = (char**)malloc(__DEF_DICT_LEN*sizeof(char*)); */
-/*   d->dlen = __DEF_DICT_LEN; */
-/*   wbuf = malloc((nbuf + 1)*sizeof(char)); */
+  free(tmps);
+}
 
-/*   while (getline(&wbuf, &nbuf, f) > 0){ */
-/*     char* wtmp; */
-/*     int len; */
-/*     struct mallinfo minfo; */
+int lookup_dict(dict_t* d, const char* word){
+  int i, ret;
+  struct wdict* wd=d->dict;
+  int wlen=strlen(word);
+  int cindex;
+  printf("%d\n", wlen);
 
-/*     minfo = mallinfo(); */
-/*     printf("%d %d\n", minfo.arena, minfo.hblkhd); */
-/*     len = strlen(wbuf); */
-/*     //wtmp = malloc((len + 1)*sizeof(char)); */
-/*     //strcpy(wtmp, wbuf); */
-/*     //d->dlist[di] = wtmp; */
-/*     printf("di %d len %d dlen %d\n", di, len, d->dlen); */
-/*     d->dlist[di] = malloc((len + 1)*sizeof(char)); */
-/*     if (d->dlist[di] == NULL){ */
-/*       perror("malloc"); */
-/*       break; */
-/*     } */
-/*     strcpy(d->dlist[di], wbuf); */
-/*     if (++di > d->dlen){ */
-/*       int new_dlen; */
-/*       new_dlen = d->dlen * 2; */
-/*       if (!(realloc(d->dlist, new_dlen*sizeof(char*)))){ */
-/* 	perror("Caricamento dict"); */
-/* 	break; */
-/*       } */
-/*       printf("realloc %d\n", new_dlen); */
-/*       d->dlen = new_dlen; */
-/*     } */
-/*   }; */
-
-/*   fclose(f); */
-
-/*   return d; */
-/* } */
+  for (i=0; i<wlen; i++){
+    cindex = _get_index_char(word[0]);
+    if (wd->next[cindex] != NULL){
+      if (wd->end > 0){
+	ret = 0;
+	break;
+      }
+      wd = wd->next[cindex];
+    }
+    else if (i == wlen){
+      /* dict continua dopo la parola ma la parola non e' intera */
+      ret = 1;
+      break;
+    }
+    else{
+      /* dict finito prima della parola, non ci puo essere */
+      ret = -1;
+      break;
+    }
+  }
+  return ret;
+}

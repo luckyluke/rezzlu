@@ -3,6 +3,7 @@
 #define DICT_H
 
 #define __DEF_DICT_LEN 1000
+#define WDICT_ROOT (char)0xff
 
 
 struct wlist{
@@ -12,6 +13,7 @@ struct wlist{
 
 struct wdict{
   char ch;
+  short int end;
   struct wdict** next;
 };
 
@@ -27,6 +29,7 @@ typedef struct {
 
 dict_t* load_dict(const char* fname);
 void free_dict(dict_t* d);
-int lookup_dict(dict_t* d, const char word);
+int lookup_dict(dict_t* d, const char* word);
+void print_dict(dict_t* d);
 
 #endif /* DICT_H */
