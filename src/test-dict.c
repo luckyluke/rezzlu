@@ -23,7 +23,7 @@ void check_findable(char* word){
 
 int main(int argc, const char** argv)
 {
-  d = load_dict("../dicts/ita.dict");
+  d = load_dict(TEST_DICT);
   words_walk=0;
   walk_dict(d, check_findable);
   printf("Loaded: %d Walked: %d\n", d->dlen, words_walk);
