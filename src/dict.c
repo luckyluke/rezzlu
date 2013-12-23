@@ -7,17 +7,18 @@
 
 struct wdict* wdict_alloc(char ch, int n_chars){
   struct wdict* tmp;
-  tmp = malloc(sizeof(struct wdict));
+  if ((tmp = malloc(sizeof(struct wdict))) == NULL){
+    perror("alloc wdict");
+    return NULL;
+  }
   tmp->ch = ch;
   tmp->_n_chars = n_chars;
-  if (tmp){
-    tmp->next = malloc(sizeof(struct wdict*)*n_chars);
-    if (tmp->next)
-      return tmp;
+  if ((tmp->next = malloc(sizeof(struct wdict*)*n_chars)) == NULL){
     free(tmp);
+    perror("alloc wdict 2");
+    return NULL;
   }
-  printf("z\n");
-  return NULL;
+  return tmp;
 }
 
 void wdict_free(struct wdict* wd){
@@ -58,7 +59,7 @@ int wdict_insert(struct wdict* wd, const char* word, int n_chars){
   if (cp > n_chars){
       printf("Errore: carattere %c overflow!!\n", cp);
       return -1;
-    }
+  }
   if (wd->next[cp] == NULL){
     wd->next[cp] = wdict_alloc(word[0], n_chars);
     if (wd->next[cp] == NULL){
@@ -69,6 +70,7 @@ int wdict_insert(struct wdict* wd, const char* word, int n_chars){
   return wdict_insert(wd->next[cp], ++word, n_chars);
 }
 
+/* create an optimized dictionary structure from words in a text file */
 dict_t* load_dict(const char* fname)
 {
   FILE* f;
@@ -134,6 +136,7 @@ void _walk_subtree(struct wdict* wd, char* partial, int n_chars, word_f f){
   free(next_partial);
 }
 
+/* walk a whole dict and call f for every word in the dict */
 void walk_dict(dict_t* d, word_f f){
   int i;
   char* tmps = malloc(sizeof(char));
@@ -175,12 +178,15 @@ int lookup_dict(dict_t* d, const char* word){
 
   if (i == wlen){
     if (found == 1)
+      /* full word found */
       ret = 0;
     else
+      /* half word found */
       ret =  1;
-  }
-  else
+  } else {
+    /* no words possible */
     ret = -1;
+  }
 
   return ret;
 }
