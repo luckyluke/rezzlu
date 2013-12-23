@@ -20,6 +20,7 @@ path* path_alloc(int x, int y){
   }
   p->x = x;
   p->y = y;
+  p->next = NULL;
   return p;
 }
 
@@ -43,8 +44,12 @@ void path_chop(path* p){
   if (p == NULL)
     return;
 
-  while (p->next != NULL)
+  while ((p->next != NULL) && (p->next->next != NULL))
     p = p->next;
+  if (p->next){
+    free(p->next);
+    p->next = NULL;
+  }
 }
 
 int path_equals(path* p1, path* p2){
@@ -71,6 +76,7 @@ int path_equals(path* p1, path* p2){
     return 1;
 }
 
+/* path p containg cell (x, y) */
 int path_contains(path* p, int x, int y){
   while (p != NULL){
     if ((p->x == x) && (p->y == y))
@@ -102,6 +108,11 @@ game_t* game_alloc(int rows, int columns){
   for (i=0; i<rows; i++){
     if ((tmp->ch[i] = malloc(sizeof(char*)*columns)) == NULL){
       perror("alloc game column");
+      if (i>0){
+	int j;
+	for (j=i-1; j>0; j--)
+	  free(tmp->ch[j]);
+      }
       game_free(tmp);
       return NULL;
     }
@@ -162,24 +173,25 @@ game_t* load_game(char** raw_game, int rows, int columns){
   game_t* g;
 
   g = game_alloc(rows, columns);
-  for (i=0; i<rows; i++)
-    for (j=0; j<columns; j++)
-      g->ch[i][j] = raw_game[i][j];
+  if (g != NULL)
+    for (i=0; i<rows; i++)
+      for (j=0; j<columns; j++)
+	g->ch[i][j] = raw_game[i][j];
   return g;
 }
 
 solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
-			    int row, int col, path* p){
+			    int row, int col, path* p, solution_t* sol){
   int r, c;
   int newlen = strlen(curw)+2;
-  solution_t* s;
 
-  s = solution_alloc();
-  for (r=row-1; r<row+1; r++)
-    for (c=col-1; c<col+1; c++){
+  for (r=row-1; r<=row+1; r++)
+    for (c=col-1; c<=col+1; c++){
       char* neww;
       solution_t* news;
       int found;
+
+      //printf("r %d c %d\n", r, c);
 
       /* check overflow */
       if ((r < 0) || (c < 0) || (r >= g->rows) || (c >=g->columns))
@@ -192,30 +204,45 @@ solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
 	continue;
       /* ... */
 
-      neww = malloc(newlen);
+      if ((neww = malloc(newlen)) == NULL){
+	perror("malloc solver");
+	return NULL;
+      }
 
       snprintf(neww, newlen, "%s%c", curw, g->ch[r][c]);
+      /* FIXME: build newpath, usa linked list come path*/
+      path_append(p, r, c);
       found = lookup_dict(d, neww);
       if (found == -1)
 	continue;
-
-      /* build newpath
-	 TODO: usa linked list come path*/
-      path_append(p, r, c);
-
-      if (found == 0)
-	/* append */
+      else if (found == 0){
+	/* TODO: append word to solution*/
 	do {} while(0);
+	printf("neww %s\n", neww);
 
-      news = solve_game_char(g, d, neww, r, c, p);
-      solution_extend(s, news);
-      free(news);
+  /* { */
+  /*   path* pp=p; */
+  /*   while (pp!=NULL){ */
+  /*     printf("x %d y %d - ", pp->x, pp->y); */
+  /*     pp = pp->next; */
+  /*   } */
+  /*   printf("\n"); */
+  /* } */
+
+	sol->nwords++;
+      }
+
+      if (solve_game_char(g, d, neww, r, c, p, sol) == NULL){
+	path_chop(p);
+	free(neww);
+	return NULL;
+      }
 
       path_chop(p);
       free(neww);
     }
   
-  return s;
+  return sol;
 }
 
 solution_t* solve_game(game_t* game, dict_t* d){
@@ -225,19 +252,22 @@ solution_t* solve_game(game_t* game, dict_t* d){
   sol = solution_alloc();
   for (i=0; i<game->rows; i++)
     for (j=0; j<game->columns; j++){
-      path* start_path=path_alloc(i, j);
-      char* starts = malloc(2*sizeof(char));
-      solution_t* tmpsol;
+      path* start_path;
+      char* starts;
+
+      start_path=path_alloc(i, j);
+      starts=malloc(2*sizeof(char));
 
       snprintf(starts, 2, "%c", game->ch[i][j]);
-      // TODO: passa la struct solution senza allocarne sempre una nuova
-      tmpsol = solve_game_char(game, d, starts, i, j, start_path);
-      solution_extend(sol, tmpsol);
-      solution_free(tmpsol);
+      solve_game_char(game, d, starts, i, j, start_path, sol);
+
+      free(start_path);
+      free(starts);
     }
 
   return sol;
 }
 
 void print_solution(solution_t* s){
+  printf("sol %d\n", s->nwords);
 }
