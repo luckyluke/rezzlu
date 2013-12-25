@@ -21,6 +21,8 @@ solution_t* solution_alloc(){
 }
 
 void solution_append(solution_t* sol, char* neww, path_t* newp){
+  /* TODO: append word to solution*/
+  printf("%s\n",  neww);
   sol->nwords++;
 }
 
@@ -28,8 +30,8 @@ void solution_free(solution_t* s){
   free(s);
 }
 
-solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
-			    int row, int col, path_t* p, solution_t* sol){
+solution_t* solve_game_char(game_t* g, char* curw, int row, int col,
+			    path_t* p, solution_t* sol){
   int r, c;
   int newlen = strlen(curw)+2; /* include string terminator */
 
@@ -58,17 +60,14 @@ solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
 
       snprintf(neww, newlen, "%s%c", curw, g->ch[r][c]);
       path_append(p, r, c);
-      found = lookup_dict(d, neww);
+      found = lookup_dict(g->cfg->dict, neww);
       if (found == -1)
 	continue;
       else if (found == 0){
-	/* TODO: append word to solution*/
-	do {} while(0);
-	printf("%d %s\n", found,  neww);
 	solution_append(sol, neww, p);
       }
 
-      if (solve_game_char(g, d, neww, r, c, p, sol) == NULL){
+      if (solve_game_char(g, neww, r, c, p, sol) == NULL){
 	path_chop(p);
 	free(neww);
 	return NULL;
@@ -81,7 +80,7 @@ solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
   return sol;
 }
 
-solution_t* solve_game(game_t* game, solution_t* sol){
+void solve_game(game_t* game, solution_t* sol){
   int i, j;
 
   for (i=0; i<game->cfg->rows; i++)
@@ -93,13 +92,11 @@ solution_t* solve_game(game_t* game, solution_t* sol){
       starts=malloc(2*sizeof(char));
 
       snprintf(starts, 2, "%c", game->ch[i][j]);
-      solve_game_char(game, game->cfg->dict, starts, i, j, start_path, sol);
+      solve_game_char(game, starts, i, j, start_path, sol);
 
       free(start_path);
       free(starts);
     }
-
-  return sol;
 }
 
 void print_solution(solution_t* s){
