@@ -6,6 +6,22 @@
 
 game_t* game_alloc(game_config_t* cfg);
 void game_free(game_t* g);
+void word_free(word_t* w);
+
+word_t* word_alloc(){
+  word_t* tmp;
+
+  if ((tmp = malloc(sizeof(word_t))) == NULL){
+    perror("alloc word");
+    return NULL;
+  }
+
+  return tmp;
+}
+
+void word_free(word_t* w){
+  free(w);
+}
 
 game_t* game_alloc(game_config_t* cfg){
   game_t* tmp;

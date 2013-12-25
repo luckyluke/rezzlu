@@ -4,25 +4,8 @@
 
 #include "path.h"
 #include "dict.h"
+#include "game.h"
 #include "solver.h"
-
-void word_free(word_t* w);
-void solution_free(solution_t* s);
-
-word_t* word_alloc(){
-  word_t* tmp;
-
-  if ((tmp = malloc(sizeof(word_t))) == NULL){
-    perror("alloc word");
-    return NULL;
-  }
-
-  return tmp;
-}
-
-void word_free(word_t* w){
-  free(w);
-}
 
 solution_t* solution_alloc(){
   solution_t* tmp;
@@ -32,10 +15,13 @@ solution_t* solution_alloc(){
     return NULL;
   }
 
+  tmp->words = NULL;
+  tmp->nwords = 0;
   return tmp;
 }
 
-void solution_extend(solution_t* base, solution_t* new){
+void solution_append(solution_t* sol, char* neww, path_t* newp){
+  sol->nwords++;
 }
 
 void solution_free(solution_t* s){
@@ -45,7 +31,7 @@ void solution_free(solution_t* s){
 solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
 			    int row, int col, path_t* p, solution_t* sol){
   int r, c;
-  int newlen = strlen(curw)+2;
+  int newlen = strlen(curw)+2; /* include string terminator */
 
   for (r=row-1; r<=row+1; r++)
     for (c=col-1; c<=col+1; c++){
@@ -79,17 +65,7 @@ solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
 	/* TODO: append word to solution*/
 	do {} while(0);
 	printf("%d %s\n", found,  neww);
-
-  /* { */
-  /*   path* pp=p; */
-  /*   while (pp!=NULL){ */
-  /*     printf("x %d y %d - ", pp->x, pp->y); */
-  /*     pp = pp->next; */
-  /*   } */
-  /*   printf("\n"); */
-  /* } */
-
-	sol->nwords++;
+	solution_append(sol, neww, p);
       }
 
       if (solve_game_char(g, d, neww, r, c, p, sol) == NULL){
@@ -105,11 +81,9 @@ solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
   return sol;
 }
 
-solution_t* solve_game(game_t* game, dict_t* d){
-  solution_t* sol;
+solution_t* solve_game(game_t* game, solution_t* sol){
   int i, j;
 
-  sol = solution_alloc();
   for (i=0; i<game->cfg->rows; i++)
     for (j=0; j<game->cfg->cols; j++){
       path_t* start_path;
@@ -119,7 +93,7 @@ solution_t* solve_game(game_t* game, dict_t* d){
       starts=malloc(2*sizeof(char));
 
       snprintf(starts, 2, "%c", game->ch[i][j]);
-      solve_game_char(game, d, starts, i, j, start_path, sol);
+      solve_game_char(game, game->cfg->dict, starts, i, j, start_path, sol);
 
       free(start_path);
       free(starts);

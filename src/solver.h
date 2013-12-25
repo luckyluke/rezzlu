@@ -6,12 +6,13 @@
 #include "game.h"
 
 typedef struct {
-  game_t game;
-  word_t** words;
+  word_t* words;
   int nwords;
 } solution_t;
 
-solution_t* solve_game(game_t* game, dict_t* d);
+solution_t* solution_alloc(void);
+void solution_free(solution_t* s);
+solution_t* solve_game(game_t* game, solution_t*sol);
 void print_solution(solution_t* s);
 
 #endif /* SOLVER_H */

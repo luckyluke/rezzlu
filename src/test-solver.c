@@ -13,7 +13,9 @@ int main(int argc, const char** argv)
   TEST_CFG->dict = d;
   g = game_load(TEST_GAME, TEST_CFG);
   fprintf(stderr, "Inizio Soluzione ...\n");
-  s = solve_game(g, d);
+  s = solution_alloc();
+  s = solve_game(g, s);
   print_solution(s);
+  solution_free(s);
   return 0;
 }
