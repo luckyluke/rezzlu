@@ -1,14 +1,40 @@
+
+#ifndef TEST_H
+#define TEST_H
+
+#include "game.h"
+
 #define TEST_ROWS 4
 #define TEST_COLS 4
 
-/* char* TEST_GAME[TEST_ROWS] = {{"r", 's', 'g', 'y'},\ */
-/* 					 {'r', 's', 'g', 'y'},\ */
-/* 					 {'c', 'e', 'b', 'u'},\ */
-/* 					 {'d', 'y', 'g', 'a'}}; */
+game_config_t _TEST_CFG = {TEST_ROWS,
+			   TEST_COLS,
+			   NULL};
 
-char* TEST_GAME[TEST_ROWS] = {"rsgy",
+#define TEST_CFG (&(_TEST_CFG))
+
+char* TEST_GAME[TEST_ROWS] = {"gehc",
 			      "rsgy",
-			      "cebu",
+			      "cebu",	
 			      "dyga"};
 
+/* char* TEST_GAME[TEST_ROWS] = {"rsgyauharj", */
+/* 			      "rsgybanaro", */
+/* 			      "cebucnaonn", */
+/* 			      "cebucnaonn", */
+/* 			      "dygadioanr", */
+/* 			      "cebucnaonn", */
+/* 			      "cebucnaonn", */
+/* 			      "dygadioanr", */
+/* 			      "dygadioanr", */
+/* 			      "ihybaachor"}; */
+
+
+/* char* TEST_GAME[TEST_ROWS] = {"rsgy", */
+/* 			      "rsgy", */
+/* 			      "cebu", */
+/* 			      "dyga"}; */
+
 #define TEST_DICT "../dicts/ita.dict"
+
+#endif /* TEST_H */

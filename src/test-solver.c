@@ -10,7 +10,8 @@ int main(int argc, const char** argv)
   solution_t* s;
   fprintf(stderr, "Carico dizionario e schema ...\n");
   d = load_dict(TEST_DICT);
-  g = load_game(TEST_GAME, TEST_ROWS, TEST_COLS);
+  TEST_CFG->dict = d;
+  g = game_load(TEST_GAME, TEST_CFG);
   fprintf(stderr, "Inizio Soluzione ...\n");
   s = solve_game(g, d);
   print_solution(s);

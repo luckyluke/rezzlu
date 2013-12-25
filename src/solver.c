@@ -86,54 +86,8 @@ int path_contains(path* p, int x, int y){
   return 0;
 }
 
-void game_free(game_t* g);
 void word_free(word_t* w);
 void solution_free(solution_t* s);
-
-game_t* game_alloc(int rows, int columns){
-  game_t* tmp;
-  int i;
-
-  if ((tmp = malloc(sizeof(game_t))) == NULL){
-    perror("alloc game");
-    return NULL;
-  }
-
-  if ((tmp->ch = malloc(sizeof(char*)*rows)) == NULL){
-    perror("alloc game rows");
-    game_free(tmp);
-    return NULL;
-  }
-
-  for (i=0; i<rows; i++){
-    if ((tmp->ch[i] = malloc(sizeof(char*)*columns)) == NULL){
-      perror("alloc game column");
-      if (i>0){
-	int j;
-	for (j=i-1; j>0; j--)
-	  free(tmp->ch[j]);
-      }
-      game_free(tmp);
-      return NULL;
-    }
-  }
-  
-  tmp->rows = rows;
-  tmp->columns = columns;
-  return tmp;
-}
-
-void game_free(game_t* g){
-  if (g->ch != NULL){
-    int i;
-    for (i=0; i<g->rows; i++){
-      if (g->ch[i] != NULL)
-	free(g->ch[i]);
-    }
-    free(g->ch);
-  }
-  free(g);
-}
 
 word_t* word_alloc(){
   word_t* tmp;
@@ -168,18 +122,6 @@ void solution_free(solution_t* s){
   free(s);
 }
 
-game_t* load_game(char** raw_game, int rows, int columns){
-  int i, j;
-  game_t* g;
-
-  g = game_alloc(rows, columns);
-  if (g != NULL)
-    for (i=0; i<rows; i++)
-      for (j=0; j<columns; j++)
-	g->ch[i][j] = raw_game[i][j];
-  return g;
-}
-
 solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
 			    int row, int col, path* p, solution_t* sol){
   int r, c;
@@ -188,13 +130,12 @@ solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
   for (r=row-1; r<=row+1; r++)
     for (c=col-1; c<=col+1; c++){
       char* neww;
-      solution_t* news;
       int found;
 
-      //printf("r %d c %d\n", r, c);
+      /*printf("r %d c %d\n", r, c);*/
 
       /* check overflow */
-      if ((r < 0) || (c < 0) || (r >= g->rows) || (c >=g->columns))
+      if ((r < 0) || (c < 0) || (r >= g->cfg->rows) || (c >=g->cfg->cols))
 	continue;
       /* starting point */
       if ((r == row) && (c == col))
@@ -218,7 +159,7 @@ solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
       else if (found == 0){
 	/* TODO: append word to solution*/
 	do {} while(0);
-	printf("neww %s\n", neww);
+	printf("%d %s\n", found,  neww);
 
   /* { */
   /*   path* pp=p; */
@@ -250,8 +191,8 @@ solution_t* solve_game(game_t* game, dict_t* d){
   int i, j;
 
   sol = solution_alloc();
-  for (i=0; i<game->rows; i++)
-    for (j=0; j<game->columns; j++){
+  for (i=0; i<game->cfg->rows; i++)
+    for (j=0; j<game->cfg->cols; j++){
       path* start_path;
       char* starts;
 
