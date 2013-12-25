@@ -3,16 +3,7 @@
 #define GAME_H
 
 #include "dict.h"
-
-typedef struct cell_s {
-  short int x;
-  short int y;
-} cell_t;
-
-typedef struct path_s {
-  struct path_s* next;
-  cell_t cell;
-} path_t;
+#include "path.h"
 
 typedef struct {
   char* word;

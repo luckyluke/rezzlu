@@ -1,6 +1,6 @@
 CFLAGS+= -Wall -pedantic -g -pg
 
-OBJ+= solver.o dict.o game.o
+OBJ+= solver.o dict.o game.o path.o
 
 all: test-dict test-solver
 
