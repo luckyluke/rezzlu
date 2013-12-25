@@ -5,27 +5,20 @@
 #include "dict.h"
 #include "solver.h"
 
-
-typedef struct _path {
-  struct _path* next;
-  int x;
-  int y;
-} path;
-
-path* path_alloc(int x, int y){
-  path* p;
-  if ((p=malloc(sizeof(path))) == NULL){
+path_t* path_alloc(int x, int y){
+  path_t* p;
+  if ((p=malloc(sizeof(path_t))) == NULL){
     perror("alloc path");
     return NULL;
   }
-  p->x = x;
-  p->y = y;
+  p->cell.x = x;
+  p->cell.y = y;
   p->next = NULL;
   return p;
 }
 
-void path_free(path* p){
-  path* tmpp=p;
+void path_free(path_t* p){
+  path_t* tmpp=p;
   while (p != NULL){
     tmpp = p->next;
     free(p);
@@ -33,26 +26,29 @@ void path_free(path* p){
   }
 }
 
-void path_append(path* p, int x, int y){
+void path_append(path_t* p, int x, int y){
   if (p == NULL)
     return;
+
+  while (p->next != NULL)
+    p = p->next;
 
   p->next = path_alloc(x, y);
 }
 
-void path_chop(path* p){
+void path_chop(path_t* p){
   if (p == NULL)
     return;
 
   while ((p->next != NULL) && (p->next->next != NULL))
     p = p->next;
   if (p->next){
-    free(p->next);
+    path_free(p->next);
     p->next = NULL;
   }
 }
 
-int path_equals(path* p1, path* p2){
+int path_equals(path_t* p1, path_t* p2){
   if ((p1==NULL) && (p2==NULL))
     /* both empty */
     return 1;
@@ -62,7 +58,7 @@ int path_equals(path* p1, path* p2){
     return 0;
 
   while ((p1->next != NULL) && (p2->next != NULL)){
-    if ((p1->x != p2->x) || (p1->y != p2->y))
+    if ((p1->cell.x != p2->cell.x) || (p1->cell.y != p2->cell.y))
       /* element at same position is different */
       return 0;
     p1 = p1->next;
@@ -77,9 +73,9 @@ int path_equals(path* p1, path* p2){
 }
 
 /* path p containg cell (x, y) */
-int path_contains(path* p, int x, int y){
+int path_contains(path_t* p, int x, int y){
   while (p != NULL){
-    if ((p->x == x) && (p->y == y))
+    if ((p->cell.x == x) && (p->cell.y == y))
       return 1;
     p = p->next;
   }
@@ -123,7 +119,7 @@ void solution_free(solution_t* s){
 }
 
 solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
-			    int row, int col, path* p, solution_t* sol){
+			    int row, int col, path_t* p, solution_t* sol){
   int r, c;
   int newlen = strlen(curw)+2;
 
@@ -151,7 +147,6 @@ solution_t* solve_game_char(game_t* g, dict_t* d, char* curw,
       }
 
       snprintf(neww, newlen, "%s%c", curw, g->ch[r][c]);
-      /* FIXME: build newpath, usa linked list come path*/
       path_append(p, r, c);
       found = lookup_dict(d, neww);
       if (found == -1)
@@ -193,7 +188,7 @@ solution_t* solve_game(game_t* game, dict_t* d){
   sol = solution_alloc();
   for (i=0; i<game->cfg->rows; i++)
     for (j=0; j<game->cfg->cols; j++){
-      path* start_path;
+      path_t* start_path;
       char* starts;
 
       start_path=path_alloc(i, j);

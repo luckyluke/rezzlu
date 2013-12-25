@@ -5,13 +5,18 @@
 #include "dict.h"
 
 typedef struct cell_s {
-  short int row;
-  short int col;
+  short int x;
+  short int y;
 } cell_t;
+
+typedef struct path_s {
+  struct path_s* next;
+  cell_t cell;
+} path_t;
 
 typedef struct {
   char* word;
-  cell_t* path;
+  path_t* path;
   unsigned short pathlen;
 } word_t;
 
