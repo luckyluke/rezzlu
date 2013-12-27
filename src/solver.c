@@ -61,9 +61,10 @@ solution_t* solve_game_char(game_t* g, char* curw, int row, int col,
       snprintf(neww, newlen, "%s%c", curw, g->ch[r][c]);
       path_append(p, r, c);
       found = lookup_dict(g->cfg->dict, neww);
-      if (found == -1)
+      if (found == -1){
+	path_chop(p);
 	continue;
-      else if (found == 0){
+      } else if (found == 0){
 	solution_append(sol, neww, p);
       }
 
