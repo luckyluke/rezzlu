@@ -4,8 +4,7 @@
 
 #include "game.h"
 
-game_t* game_alloc(game_config_t* cfg);
-void game_free(game_t* g);
+word_t* word_alloc(void);
 void word_free(word_t* w);
 
 word_t* word_alloc(){
@@ -57,29 +56,26 @@ game_t* game_alloc(game_config_t* cfg){
 
 void game_free(game_t* g){
   if (g->ch != NULL){
+    int i;
+    for (i=0; i<g->cfg->rows; i++)
+      free(g->ch[i]);
     free(g->ch);
   }
   free(g);
 }
 
-game_t* game_load(char** raw_game, game_config_t* cfg){
+void game_load(char** raw_game, game_t* g){
   int i, j;
-  game_t* g;
 
-  g = game_alloc(cfg);
   if (g != NULL)
-    for (i=0; i<cfg->rows; i++)
-      for (j=0; j<cfg->cols; j++)
+    for (i=0; i<g->cfg->rows; i++)
+      for (j=0; j<g->cfg->cols; j++)
 	g->ch[i][j] = raw_game[i][j];
-  return g;
 }
 
-game_t* game_gen(game_config_t* cfg)
+void game_gen(game_t* g)
 {
-  game_t* g;
-  g = game_alloc(cfg);
   /* TODO */
-  return g;
 }
 
 word_t* game_put_char(game_status_t* status, cell_t* cell){

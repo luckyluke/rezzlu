@@ -33,8 +33,10 @@ typedef struct game_status_s {
   game_t* g;
 } game_status_t;
 
-game_t* game_load(char** raw_game, game_config_t* cfg);
-game_t* game_gen(game_config_t* cfg);
+game_t* game_alloc(game_config_t* cfg);
+void game_free(game_t* g);
+void game_load(char** raw_game, game_t* g);
+void game_gen(game_t* g);
 
 word_t* game_put_char(game_status_t* status, cell_t* cell);
 word_t* game_stop_word(game_status_t* status);
