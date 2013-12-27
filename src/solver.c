@@ -34,10 +34,15 @@ solution_t* solve_game_char(game_t* g, char* curw, int row, int col,
 			    path_t* p, solution_t* sol){
   int r, c;
   int newlen = strlen(curw)+2; /* include string terminator */
+  char* neww;
 
-  for (r=row-1; r<=row+1; r++)
+  if ((neww = malloc(newlen)) == NULL){
+    perror("malloc solver");
+    return NULL;
+  }
+
+  for (r=row-1; r<=row+1; r++){
     for (c=col-1; c<=col+1; c++){
-      char* neww;
       int found;
 
       /*printf("r %d c %d\n", r, c);*/
@@ -52,11 +57,6 @@ solution_t* solve_game_char(game_t* g, char* curw, int row, int col,
       if (path_contains(p, r, c))
 	continue;
       /* ... */
-
-      if ((neww = malloc(newlen)) == NULL){
-	perror("malloc solver");
-	return NULL;
-      }
 
       snprintf(neww, newlen, "%s%c", curw, g->ch[r][c]);
       path_append(p, r, c);
@@ -75,9 +75,10 @@ solution_t* solve_game_char(game_t* g, char* curw, int row, int col,
       }
 
       path_chop(p);
-      free(neww);
     }
+  }
   
+  free(neww);
   return sol;
 }
 
