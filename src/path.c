@@ -81,3 +81,11 @@ int path_contains(path_t* p, int x, int y){
   }
   return 0;
 }
+
+void path_print(path_t* p){
+  while (p != NULL){
+    printf("(%d %d) ", p->cell.x, p->cell.y);
+    p = p->next;
+  }
+  printf("\n");
+}
