@@ -1,3 +1,5 @@
 *.pyc
 dicts/*.zip
 *.o
+TAGS
+*.out
