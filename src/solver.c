@@ -21,12 +21,25 @@ solution_t* solution_alloc(){
 }
 
 void solution_append(solution_t* sol, char* neww, path_t* newp){
-  /* TODO: append word to solution*/
-  printf("%s\n",  neww);
+  unsigned int wi;
+
+  wi = sol->nwords;
   sol->nwords++;
+  if ((sol->words = realloc(sol->words, sizeof(word_t*)*sol->nwords)) == NULL){
+    perror("solution append");
+    return;
+  }
+  sol->words[wi] = word_alloc(neww, newp);
 }
 
 void solution_free(solution_t* s){
+  int i;
+
+  if (s == NULL)
+    return;
+
+  for (i=0; i<s->nwords; i++)
+    word_free(s->words[i]);
   free(s);
 }
 
@@ -102,5 +115,10 @@ void solve_game(game_t* game, solution_t* sol){
 }
 
 void print_solution(solution_t* s){
+  int i;
   printf("sol %d\n", s->nwords);
+  for (i=0; i<s->nwords; i++){
+    printf("%s\t%d\t",  s->words[i]->word, s->words[i]->pathlen);
+    path_print(s->words[i]->path);
+  }
 }

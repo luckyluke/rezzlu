@@ -6,7 +6,7 @@
 #include "game.h"
 
 typedef struct {
-  word_t* words;
+  word_t** words;
   int nwords;
 } solution_t;
 

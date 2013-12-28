@@ -1,24 +1,41 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "game.h"
 
-word_t* word_alloc(void);
-void word_free(word_t* w);
-
-word_t* word_alloc(){
+word_t* word_alloc(char* w, path_t* p){
   word_t* tmp;
+  int wsize=sizeof(char)*(strlen(w)+1);
 
   if ((tmp = malloc(sizeof(word_t))) == NULL){
     perror("alloc word");
     return NULL;
   }
 
+  if ((tmp->word = malloc(wsize)) == NULL){
+    free(tmp);
+    perror("alloc word string");
+    return NULL;
+  }
+  strncpy(tmp->word, w, wsize);
+  if ((tmp->path = path_copy(p)) == NULL){
+    free(tmp->word);
+    free(tmp);
+    perror("alloc word path");
+    return NULL;
+  }
+  tmp->pathlen = path_len(tmp->path);
+
   return tmp;
 }
 
 void word_free(word_t* w){
+  if (w == NULL)
+    return;
+  free(w->word);
+  path_free(w->path);
   free(w);
 }
 

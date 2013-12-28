@@ -33,6 +33,8 @@ typedef struct game_status_s {
   game_t* g;
 } game_status_t;
 
+word_t* word_alloc(char* w, path_t* p);
+void word_free(word_t* w);
 game_t* game_alloc(game_config_t* cfg);
 void game_free(game_t* g);
 void game_load(char** raw_game, game_t* g);
