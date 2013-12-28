@@ -3,6 +3,10 @@
 
 A clone of the Ruzzle game, designed to have multiple GUIs and an embedded optimized solver.
 
+A note about dictionary:
+for now the only dict in dicts/ folder is retrieved from
+http://coding.napolux.com/post/42114980272/ruzzle-lista-parole-italiane
+
 == Authors ==
 
 Luca Dariz <luca.dariz@gmail.com>
