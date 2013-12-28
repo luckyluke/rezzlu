@@ -18,6 +18,8 @@ void path_free(path_t* p);
 void path_chop(path_t* p);
 int path_equals(path_t* p1, path_t* p2);
 int path_contains(path_t* p, int x, int y);
+path_t* path_copy(path_t* src);
+int path_len(path_t* p);
 void path_print(path_t* p);
 
 #endif /* PATH_H */

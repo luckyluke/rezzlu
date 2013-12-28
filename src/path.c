@@ -82,6 +82,29 @@ int path_contains(path_t* p, int x, int y){
   return 0;
 }
 
+path_t* path_copy(path_t* src){
+  path_t** dest_p;
+  path_t* dest;
+
+  dest_p = &dest;
+  while (src != NULL){
+    *dest_p = path_alloc(src->cell.x, src->cell.y);
+    dest_p = &((*dest_p)->next);
+    src = src->next;
+  }
+  return dest;
+}
+
+int path_len(path_t* p){
+  int len=0;
+
+  while (p != NULL){
+    p = p->next;
+    len++;
+  }
+  return len;
+}
+
 void path_print(path_t* p){
   while (p != NULL){
     printf("(%d %d) ", p->cell.x, p->cell.y);
