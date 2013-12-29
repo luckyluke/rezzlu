@@ -40,10 +40,17 @@ void check_findable(char* word){
 
 int main(int argc, const char** argv)
 {
+  int i;
+
   d = load_dict(TEST_DICT);
+
   words_walk=0;
   walk_dict(d, check_findable);
   printf("Loaded: %d Walked: %d\n", d->dlen, words_walk);
+
+  for (i=0; i<d->n_chars; i++)
+    printf("%c %.6f\n", d->chars[i].c, d->chars[i].freq);
+
   free_dict(d);
 
   return 0;

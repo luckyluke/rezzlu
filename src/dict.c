@@ -100,6 +100,7 @@ dict_t* load_dict(const char* fname)
   size_t nbuf=20;
   dict_t* d;
   int i;
+  float tot_c=0;
 
   f = fopen(fname, "r");
   if (f == NULL){
@@ -128,21 +129,37 @@ dict_t* load_dict(const char* fname)
     return NULL;
   }
 
-  for (i=0; i<d->n_chars; i++)
+  for (i=0; i<d->n_chars; i++){
     d->chars[i].c = 'a'+i;
+    d->chars[i].freq = 0;
+  }
 
   /* use a buffer to read and insert a word into the dict */
   wbuf = malloc((nbuf + 1)*sizeof(char));
   while (getline(&wbuf, &nbuf, f) > 0){
-    for (i=0; i<strlen(wbuf); i++){
+    for (i=0; i<nbuf; i++){
       /* truncate word on line end */
-      if ((wbuf[i] == '\n') || (wbuf[i] == '\r'))
+      if ((wbuf[i] == '\n') || (wbuf[i] == '\r')){
 	wbuf[i] = '\0';
+	break;
+      } else {
+	int ci;
+	/* TODO: check valid char */
+	ci = _get_char_index(wbuf[i]);
+	if ((ci < d->n_chars) && (ci >= 0)){
+	  d->chars[ci].freq += 1.0;
+	  tot_c += 1.0;
+	}
+      }
     }
     if (wdict_insert(d->dict, wbuf, d->n_chars) == 0)
       d->dlen++;
   };
   free(wbuf);
+
+  /* adjust char freq */
+  for (i=0; i<d->n_chars; i++)
+    d->chars[i].freq = d->chars[i].freq / tot_c;
 
   fclose(f);
 
