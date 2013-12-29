@@ -108,16 +108,20 @@ dict_t* load_dict(const char* fname)
   }
 
   /* create root node */
-  d = malloc(sizeof(dict_t));
+  if ((d = malloc(sizeof(dict_t))) == NULL){
+    perror("alloc dict");
+    free_dict(d);
+    return NULL;
+  }
+  d->n_chars = 26; /* ita */
   d->dict = wdict_alloc(WDICT_ROOT, d->n_chars);
   if (d->dict == NULL){
-    perror("Alloc dict");
+    perror("Alloc wdict");
     return NULL;
   }
   d->dlen = 0;
 
   /* TODO: fill chard according to language */
-  d->n_chars = 26; // ita
   if ((d->chars = malloc(sizeof(character_t)*d->n_chars)) == NULL){
     perror("alloc dict char list");
     free_dict(d);
