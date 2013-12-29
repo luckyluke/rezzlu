@@ -31,7 +31,7 @@ typedef struct game_config_s {
   short int rows;
   short int cols;
   dict_t* dict;
-  /* solve all? */
+  int solve_all;
 } game_config_t;
 
 typedef struct {
@@ -54,8 +54,8 @@ void word_free(word_t* w);
 game_t* game_alloc(game_config_t* cfg);
 void game_free(game_t* g);
 void game_load(char** raw_game, game_t* g);
-void game_gen(game_t* g);
 
+void game_gen(game_t* g);
 word_t* game_put_char(game_status_t* status, cell_t* cell);
 word_t* game_stop_word(game_status_t* status);
 int game_check_word(game_status_t* status, word_t* word);
