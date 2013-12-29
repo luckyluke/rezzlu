@@ -49,7 +49,8 @@ void wdict_free(struct wdict* wd){
     if (wd->next[i] != NULL)
       wdict_free(wd->next[i]);
   }
-  free(wd->next);
+  if (wd->next != NULL)
+    free(wd->next);
   free(wd);
 }
 
@@ -98,6 +99,7 @@ dict_t* load_dict(const char* fname)
   char* wbuf;
   size_t nbuf=20;
   dict_t* d;
+  int i;
 
   f = fopen(fname, "r");
   if (f == NULL){
@@ -107,7 +109,6 @@ dict_t* load_dict(const char* fname)
 
   /* create root node */
   d = malloc(sizeof(dict_t));
-  d->n_chars = 26;
   d->dict = wdict_alloc(WDICT_ROOT, d->n_chars);
   if (d->dict == NULL){
     perror("Alloc dict");
@@ -115,10 +116,20 @@ dict_t* load_dict(const char* fname)
   }
   d->dlen = 0;
 
+  /* TODO: fill chard according to language */
+  d->n_chars = 26; // ita
+  if ((d->chars = malloc(sizeof(character_t)*d->n_chars)) == NULL){
+    perror("alloc dict char list");
+    free_dict(d);
+    return NULL;
+  }
+
+  for (i=0; i<d->n_chars; i++)
+    d->chars[i].c = 'a'+i;
+
   /* use a buffer to read and insert a word into the dict */
   wbuf = malloc((nbuf + 1)*sizeof(char));
   while (getline(&wbuf, &nbuf, f) > 0){
-    int i;
     for (i=0; i<strlen(wbuf); i++){
       /* truncate word on line end */
       if ((wbuf[i] == '\n') || (wbuf[i] == '\r'))
@@ -136,6 +147,8 @@ dict_t* load_dict(const char* fname)
 
 void free_dict(dict_t* d){
   wdict_free(d->dict);
+  if (d->chars != NULL)
+    free(d->chars);
   free(d);
 }
 

@@ -39,13 +39,16 @@ struct wdict{
   int _n_chars;
 };
 
+/* a symbol of the alphabet used, with the relative frequency */
+typedef struct character_s {
+  char c;
+  float freq;
+} character_t;
+
 typedef struct {
   /* number of chars in the alphabet */
   int n_chars;
-  /* TODO: list of chars in alphabet? */
-  char* chars;
-  /* TODO: statistics of frequency for each char */
-  float* stats;
+  character_t* chars;
   /* number of words in the dict */
   int dlen;
   /* TODO: raw dict, i.e. list of words */
