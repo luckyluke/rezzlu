@@ -24,6 +24,8 @@
 
 struct wdict* wdict_alloc(char ch, int n_chars){
   struct wdict* tmp;
+  int i;
+
   if ((tmp = malloc(sizeof(struct wdict))) == NULL){
     perror("alloc wdict");
     return NULL;
@@ -35,6 +37,8 @@ struct wdict* wdict_alloc(char ch, int n_chars){
     perror("alloc wdict 2");
     return NULL;
   }
+  for (i=0; i<n_chars; i++)
+    tmp->next[i] = NULL;
   return tmp;
 }
 
