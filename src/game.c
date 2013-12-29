@@ -57,7 +57,7 @@ void word_free(word_t* w){
 
 game_t* game_alloc(game_config_t* cfg){
   game_t* tmp;
-  int i;
+  int i, j;
 
   if ((tmp = malloc(sizeof(game_t))) == NULL){
     perror("alloc game");
@@ -74,13 +74,14 @@ game_t* game_alloc(game_config_t* cfg){
     if ((tmp->ch[i] = malloc(sizeof(char*)*cfg->cols)) == NULL){
       perror("alloc game column");
       if (i>0){
-	int j;
 	for (j=i-1; j>0; j--)
 	  free(tmp->ch[j]);
       }
       game_free(tmp);
       return NULL;
     }
+    for (j=0; j<cfg->cols; j++)
+      tmp->ch[i][j] = 'z';
   }
 
   tmp->cfg = cfg;
