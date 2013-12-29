@@ -154,7 +154,7 @@ dict_t* load_dict(const char* fname)
     }
     if (wdict_insert(d->dict, wbuf, d->n_chars) == 0)
       d->dlen++;
-  };
+  }
   free(wbuf);
 
   /* adjust char freq */
